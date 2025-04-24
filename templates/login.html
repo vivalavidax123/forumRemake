@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    
+  <div class="login-container">
+    <h2>登录</h2>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Enter your Username, Email or Phone Number" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Sign in</button>
+    </form>
+    <div id="login-tip" style="color:red;display:none;">Wrong Username or Password</div>
+  </div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value;
+      const pwd = document.getElementById('password').value;
+      // 换成实际后端校验
+      if (user === 'admin' && pwd === '123456') {
+        window.location.href = "main.html";  // 跳转到主界面
+      } else {
+        document.getElementById('login-tip').style.display = '';
+      }
+    });
+  </script>
+</body>
+</html>

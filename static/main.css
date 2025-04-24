@@ -1,0 +1,148 @@
+body {
+    margin: 0;
+    background: #f6f7fa;
+    font-family: "PingFang SC", "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+  }
+  
+  .navbar {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-weight: bold;
+    color: #056de8;
+    font-size: 1.6rem;
+    margin-right: 30px;
+    letter-spacing: 2px;
+  }
+  .search {
+    flex: 1;
+    height: 36px;
+    border-radius: 20px;
+    border: 1px solid #e3e4e7;
+    padding: 0 18px;
+    font-size: 15px;
+    margin-right: 24px;
+    outline: none;
+    background: #f6f7fa;
+  }
+  .user button {
+    background: #056de8;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .user button:hover {
+    background: #2252c4;
+  }
+  
+  .main-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr 260px;
+    gap: 32px;
+    max-width: 1080px;
+    margin: 32px auto 0 auto;
+    min-height: 72vh;
+  }
+  
+  .left {
+    background: #fff;
+    border-radius: 10px;
+    padding: 26px 0 0 0;
+    font-size: 17px;
+    min-width: 0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    height: fit-content;
+  }
+  .left ul {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 30px;
+  }
+  .left li {
+    padding: 10px 0;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.18s;
+  }
+  .left li:hover {
+    color: #056de8;
+  }
+  
+  .center {
+    min-width: 0;
+  }
+  .feed {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  .question-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 22px 28px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  }
+  .question-card h3 {
+    margin: 0 0 8px 0;
+    color: #223;
+    font-size: 1.15rem;
+  }
+  .question-card p {
+    color: #555;
+    font-size: 15px;
+    margin: 0;
+  }
+  
+  /* 关键点：右侧栏粘性 */
+  .right {
+    position: sticky;
+    top: 28px;   /* 距离页面顶部的距离，和导航栏高度/间距保持一致 */
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    padding: 18px 20px;
+    min-width: 0;
+    height: fit-content;
+  }
+  .recommend h4 {
+    margin: 0 0 15px 0;
+    color: #056de8;
+    font-size: 1.1rem;
+  }
+  .recommend ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .recommend li {
+    margin-bottom: 10px;
+    color: #234;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .recommend li:hover {
+    color: #056de8;
+  }
+  
+  .footer {
+    background: #f8f8f8;
+    color: #999;
+    text-align: center;
+    padding: 20px 0 16px 0;
+    font-size: 15px;
+    margin-top: 30px;
+    border-top: 1px solid #ececec;
+  }
+  
