@@ -65,5 +65,6 @@ def print_all_comments():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+        print("已初始化database")
         # 下面可以加演示用的数据插入代码
 
