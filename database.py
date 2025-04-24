@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  # 数据库文件名test.db
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False         # 关闭追踪（gpt给的，不知道啥用
+app.config['SECRET_KEY'] = 'your_secret_key'  # 用于加密session等
 db = SQLAlchemy(app)
 
 
@@ -13,6 +14,7 @@ class User(db.Model): # 用户
     id = db.Column(db.Integer, primary_key=True)              # 主键
     username = db.Column(db.String(80), unique=True, nullable=False)  # 用户名，唯一且不能为空
     email = db.Column(db.String(120), unique=True)
+    password_hash = db.Column(db.String(256), nullable=False) # 密码哈希值
     avatar = db.Column(db.String(255)) #头像
     create_time = db.Column(db.DateTime,
                             default=lambda: datetime.now(timezone.utc))#创建时间
@@ -62,9 +64,8 @@ def print_all_comments():
 
 
 
+# 在database.py的main部分添加
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         print("已初始化database")
-        # 下面可以加演示用的数据插入代码
-
