@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>写博客</title>
+    <!-- EasyMDE Markdown 编辑器 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <style>
+      body {
+        background: #f7f8fa;
+        min-height: 100vh;
+        margin: 0;
+        font-family: "PingFang SC", "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+      .blog-write-container {
+        margin-top: 48px;
+        background: #fff;
+        padding: 36px 32px 28px 32px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        max-width: 520px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .blog-write-container h2 {
+        text-align: center;
+        margin-bottom: 22px;
+        color: #056de8;
+        font-size: 2rem;
+      }
+      .blog-write-container input[type="text"] {
+        padding: 10px;
+        margin-bottom: 18px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .EasyMDEContainer {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .blog-write-container button.submit-btn {
+        background: #056de8 !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 5px !important;
+        font-size: 18px !important;
+        padding: 12px 0 !important;
+        width: 100%;
+        margin-top: 10px;
+        cursor: pointer;
+        box-shadow: none !important;
+        transition: background 0.2s;
+      }
+      .blog-write-container button.submit-btn:hover {
+        background: #2252c4 !important;
+      }
+      .msg {
+        color: #27a744;
+        text-align: center;
+        margin-top: 18px;
+        font-size: 16px;
+      }
+    </style>
+</head>
+<body>
+    <div class="blog-write-container">
+        <h2>写博客</h2>
+        <form method="post" action="/write">
+            <input type="text" name="title" placeholder="请输入标题" required>
+            <!-- Markdown 编辑器 textarea -->
+            <textarea name="content" id="editor" rows="12" placeholder="支持 Markdown 语法，可以插入标题、图片、代码块等……" required></textarea>
+            <button type="submit" class="submit-btn">发布</button>
+        </form>
+        {% if message %}
+        <div class="msg">{{ message }}</div>
+        {% endif %}
+    </div>
+    <!-- EasyMDE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <script>
+      var easyMDE = new EasyMDE({ 
+        element: document.getElementById('editor'),
+        spellChecker: false,
+        placeholder: "支持 Markdown 语法，可以插入标题、图片、代码块等……"
+      });
+    </script>
+</body>
+</html>

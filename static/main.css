@@ -108,7 +108,7 @@ body {
   /* 关键点：右侧栏粘性 */
   .right {
     position: sticky;
-    top: 28px;   /* 距离页面顶部的距离，和导航栏高度/间距保持一致 */
+    top: 80px;   /* 距离页面顶部的距离，和导航栏高度/间距保持一致 */
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 1px 6px rgba(0,0,0,0.05);

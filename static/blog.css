@@ -1,0 +1,126 @@
+body {
+    margin: 0;
+    background: #f7f8fa;
+    font-family: "PingFang SC", "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+  }
+  
+  /* 知乎风格顶部导航栏 */
+  .navbar {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    height: 62px;
+    display: flex;
+    align-items: center;
+    padding: 0 38px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-weight: bold;
+    color: #056de8;
+    font-size: 1.7rem;
+    margin-right: 30px;
+    letter-spacing: 2px;
+  }
+  .user {
+    margin-left: auto;
+    color: #2252c4;
+    font-size: 1.1rem;
+  }
+  
+  .main-detail {
+    display: flex;
+    max-width: 1100px;
+    margin: 36px auto 0 auto;
+    gap: 40px;
+    min-height: 600px;
+  }
+  
+  /* 文章内容区 */
+  .article-content {
+    flex: 2;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 38px 38px 48px 38px;
+    min-width: 0;
+  }
+  .article-content h1 {
+    margin: 0 0 12px 0;
+    font-size: 2rem;
+    color: #222;
+    font-weight: 700;
+  }
+  .article-meta {
+    margin-bottom: 30px;
+    color: #888;
+    font-size: 15px;
+  }
+  .article-meta .author {
+    color: #056de8;
+    margin-right: 16px;
+  }
+  .article-meta .date {
+    color: #999;
+  }
+  
+  .article-body {
+    color: #252525;
+    line-height: 1.85;
+    font-size: 1.09rem;
+  }
+  
+  /* 右侧作者卡片 */
+  .author-info {
+    flex: 1;
+    min-width: 300px;
+    max-width: 350px;
+    position: relative;
+  }
+  .author-card {
+    position: sticky;
+    top: 86px; /* 距离顶部的吸附距离，与 header 高度配合 */
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.09);
+    padding: 34px 20px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .author-avatar {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    background: #e7f0ff;
+    margin-bottom: 10px;
+  }
+  .author-card h4 {
+    margin: 0;
+    color: #056de8;
+    font-size: 1.18rem;
+    font-weight: 700;
+  }
+  .author-card .bio {
+    color: #555;
+    font-size: 15px;
+    text-align: center;
+    margin: 5px 0 10px 0;
+  }
+  .follow-btn {
+    background: #056de8;
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 32px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.15s;
+  }
+  .follow-btn:hover {
+    background: #2252c4;
+  }
+  
