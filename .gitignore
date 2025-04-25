@@ -1,0 +1,37 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env/
+.venv/
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# SQLite database
+*.db
+*.sqlite3
+
+# Log files
+*.log
+
+# Local configuration
+instance/
+.env
+.flaskenv
+
+# Other
+.DS_Store
