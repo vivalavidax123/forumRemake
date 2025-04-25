@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 
 app = Flask(__name__)
@@ -14,8 +15,10 @@ class User(db.Model): # 用户
     username = db.Column(db.String(80), unique=True, nullable=False)  # 用户名，唯一且不能为空
     email = db.Column(db.String(120))
     avatar = db.Column(db.String(255)) #头像
-    create_time = db.Column(db.DateTime,
-                            default=lambda: datetime.now(timezone.utc))#创建时间
+    create_time = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(ZoneInfo("Australia/Melbourne"))
+    )#创建时间
     post_count = db.Column(db.Integer, default=0)             # 发帖数量
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
@@ -29,8 +32,10 @@ class Post(db.Model): #
     title = db.Column(db.String(100))
     content = db.Column(db.Text)                                #内容
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    create_time = db.Column(db.DateTime,
-                            default=lambda: datetime.now(timezone.utc))#创建时间
+    create_time = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(ZoneInfo("Australia/Melbourne"))
+    )#创建时间
     like_count = db.Column(db.Integer, default=0)               # 点赞数
     comment_count = db.Column(db.Integer, default=0)            # 评论数
 
@@ -49,8 +54,10 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))  # 评论属于哪条帖子
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 评论者
     content = db.Column(db.Text)                               # 内容
-    create_time = db.Column(db.DateTime,
-                            default=lambda: datetime.now(timezone.utc))#创建时间
+    create_time = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(ZoneInfo("Australia/Melbourne"))
+    )#创建时间
     like_count = db.Column(db.Integer, default=0)              # 点赞数
     parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))  # 父评论ID
     is_deleted = db.Column(db.Boolean, default=False)  # 是否被删除
