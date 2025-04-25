@@ -20,6 +20,8 @@ def register():
     db.session.commit()
     return jsonify({'status': 0, 'msg': '注册成功', 'user_id': user.id})
 
+
+
 # 登录 (username)
 @user_api.route('/api/login', methods=['POST'])
 def login():
