@@ -21,7 +21,6 @@ def create_post():
     
     '''
 
-
     post = Post(user_id=user_id, title=title, content=content)
     db.session.add(post)
     db.session.commit()

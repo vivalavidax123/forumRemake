@@ -41,7 +41,13 @@ def login():
         return jsonify({'status': 1, 'msg': '用户不存在'})
     if not password or user.password_hash != password_hash:
         return jsonify({'status': 2, 'msg': '密码错误'})
-    return jsonify({'status': 0, 'msg': '登录成功', 'user_id': user.id})
+    return jsonify({
+        'status': 0,
+        'msg': '登录成功',
+        'user_id': user.id,
+        'username': user.username,
+        'avatar': user.avatar or ""
+    })
 
 
 # 查看所有user（测试）
