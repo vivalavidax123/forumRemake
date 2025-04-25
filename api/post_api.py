@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from database import db, Post
+import audit
+
 
 post_api = Blueprint('post_api', __name__)
 
@@ -11,6 +13,13 @@ def create_post():
     content = data.get('content')
     if not (user_id and title and content):
         return jsonify({'status': 1, 'msg': '缺少参数'})
+
+    ok, msg = audit.audit_by_deepseek(title, content)
+    if not ok:
+        # 审核不通过，直接返回错误信息
+        return jsonify({'status': 2, 'msg': f'发帖失败，原因：{msg}'})
+
+
     post = Post(user_id=user_id, title=title, content=content)
     db.session.add(post)
     db.session.commit()
