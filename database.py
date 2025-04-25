@@ -12,7 +12,7 @@ db = SQLAlchemy(app)
 class User(db.Model): # 用户
     id = db.Column(db.Integer, primary_key=True)              # 主键
     username = db.Column(db.String(80), unique=True, nullable=False)  # 用户名，唯一且不能为空
-    email = db.Column(db.String(120), unique=True)
+    email = db.Column(db.String(120))
     avatar = db.Column(db.String(255)) #头像
     create_time = db.Column(db.DateTime,
                             default=lambda: datetime.now(timezone.utc))#创建时间
