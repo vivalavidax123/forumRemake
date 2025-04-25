@@ -5,16 +5,28 @@ body {
   min-width: 1080px;  /* 或你想要的宽度 */
 
 }
-.user-info {
-  margin-left: 15px;
-  color: #333;
-  font-size: 15px;
+.user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.logout-btn {
-  margin-left: 10px;
-  background: #f0f0f0 !important;
-  color: #333 !important;
+.user-info {
+  font-size: 15px;
+  color: #333;
+  margin-right: 6px;
+  letter-spacing: 1px;
+}
+
+.post-btn, .logout-btn {
+  border: none;
+  padding: 8px 24px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+  margin-right: 0;
 }
 
 .logout-btn:hover {
@@ -34,6 +46,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
+  gap: 30px;
 }
 
 .header-bottom {
@@ -239,4 +252,44 @@ body {
   font-size: 15px;
   margin-top: 30px;
   border-top: 1px solid #ececec;
+}
+.user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 通用主色按钮 (Post/发帖) */
+.post-btn, .write-btn {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background 0.18s;
+}
+
+.post-btn:hover, .write-btn:hover {
+  background: #218838;
+}
+
+/* 灰色按钮 (Logout/退出) */
+.logout-btn {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 0;
+  transition: background 0.18s;
+}
+.logout-btn:hover {
+  background: #e0e0e0;
 }

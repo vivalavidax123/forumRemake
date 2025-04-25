@@ -127,3 +127,23 @@ def update_user():
 
     db.session.commit()
     return jsonify({'status': 0, 'msg': '用户信息修改成功'})
+
+# 返回当前用户信息
+@user_api.route('/api/profile', methods=['GET'])
+def get_profile():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'status': 1, 'msg': '缺少用户ID'})
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'status': 2, 'msg': '用户不存在'})
+    result = {
+        'id': user.id,
+        'username': user.username,
+        'avatar': user.avatar or "",
+        'email': user.email,
+        'post_count': user.post_count,
+        # 你可以自己加 follow_count
+        'follow_count': getattr(user, 'follow_count', 0)
+    }
+    return jsonify({'status': 0, 'user': result})
