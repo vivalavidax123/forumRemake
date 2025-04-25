@@ -3,23 +3,26 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>登录 - 简易论坛</title>
+  <title>Login - Easy Blog</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
 
 <body>
   <div class="login-container">
+    <div class="logo-text-layer">
+      <span class="logo-main">Easy Blog</span>
+    </div>
     <div class="title">
-      <h2>登录简易论坛</h2>
+      <h2>Login Easy Blog</h2>
     </div>
     <form id="login-form">
-      <input type="text" id="username" placeholder="请输入用户名" required>
-      <input type="password" id="password" placeholder="请输入密码" required>
-      <button type="submit">登录</button>
+      <input type="text" id="username" placeholder="Enter User Name" required>
+      <input type="password" id="password" placeholder="Enter password" required>
+      <button type="submit">Login</button>
     </form>
     <div id="login-tip" style="color:#ff4d4f;margin-top:-10px;display:none;">用户名不存在</div>
     <div style="margin-top:10px;">
-      <a href="/register" style="color:#056de8;text-decoration:none;">没有账号？立即注册</a>
+      <a href="/register" style="color:#056de8;text-decoration:none;">Regist Now</a>
     </div>
   </div>
 

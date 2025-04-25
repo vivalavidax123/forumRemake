@@ -1,0 +1,123 @@
+body {
+    background: #F8F6E3;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "PingFang SC", "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+  }
+  .logo-text-layer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .logo-main {
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: #0575e6;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #6AD4DD 60%, #97E7E1 100%);
+    padding: 0 74% 0 74%;
+    border-radius: 6px;
+    /* 可选加阴影/下划线增强分层感 */
+    box-shadow: 0 2px 8px rgba(106, 212, 221, 0.10);
+    /* 或加一个稍微厚一点的下边框，进一步突出分层 */
+    /* border-bottom: 6px solid #97E7E1; */
+  }
+  
+  .login-container {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09), 0 1.5px 8px rgba(106,212,221,0.12);
+    padding: 40px 36px 32px 36px;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .login-container .title h2 {
+    color: #056de8;
+    margin-bottom: 28px;
+    text-align: center;
+    font-size: 1.7rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  
+  #register-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  #register-form input {
+    width: 260px;
+    height: 44px;
+    border-radius: 22px;
+    border: 1px solid #d7e4ef;
+    margin-bottom: 18px;
+    font-size: 16px;
+    padding: 0 18px;
+    background: #f6f7fa;
+    outline: none;
+    transition: border 0.18s;
+  }
+  #register-form input:focus {
+    border: 1.5px solid #56b7f2;
+  }
+  
+  #register-form button {
+    width: 260px;
+    height: 44px;
+    border-radius: 22px;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.18s;
+  }
+  #register-form button:hover {
+    background: #218838;
+  }
+  
+  #register-tip {
+    width: 260px;
+    background: #fff6f6;
+    border-radius: 6px;
+    font-size: 15px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 6px 0;
+  }
+  
+  a {
+    color: #056de8;
+    text-decoration: none;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 500px) {
+    .login-container {
+      width: 95vw;
+      min-width: 0;
+      padding: 20px 8px 24px 8px;
+    }
+    #register-form input, #register-form button, #register-tip {
+      width: 90vw;
+      min-width: 0;
+      font-size: 15px;
+    }
+  }
+  
