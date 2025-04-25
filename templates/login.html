@@ -1,33 +1,111 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>登录 - 简易论坛</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
+
 <body>
-    
   <div class="login-container">
-    <h2>登录</h2>
+    <div class="title">
+      <h2>登录简易论坛</h2>
+    </div>
     <form id="login-form">
-      <input type="text" id="username" placeholder="Enter your Username, Email or Phone Number" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <button type="submit">Sign in</button>
+      <input type="text" id="username" placeholder="请输入用户名" required>
+      <button type="submit">登录</button>
     </form>
-    <div id="login-tip" style="color:red;display:none;">Wrong Username or Password</div>
+    <div id="login-tip" style="color:#ff4d4f;margin-top:-10px;display:none;">用户名不存在</div>
+    <div style="margin-top:10px;">
+      <a href="#" id="register-link" style="color:#056de8;text-decoration:none;">没有账号？立即注册</a>
+    </div>
   </div>
+
   <script>
-    document.getElementById('login-form').addEventListener('submit', function(e) {
+    document.getElementById('login-form').addEventListener('submit', function (e) {
       e.preventDefault();
-      const user = document.getElementById('username').value;
-      const pwd = document.getElementById('password').value;
-      // 换成实际后端校验
-      if (user === 'admin' && pwd === '123456') {
-        window.location.href = "main.html";  // 跳转到主界面
-      } else {
-        document.getElementById('login-tip').style.display = '';
+      const username = document.getElementById('username').value.trim();
+
+      if (!username) {
+        document.getElementById('login-tip').innerText = '请输入用户名';
+        document.getElementById('login-tip').style.display = 'block';
+        return;
       }
+
+      // 调用后端登录API
+      fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 0) {
+            // 登录成功，保存用户ID到localStorage
+            localStorage.setItem('userId', data.user_id);
+            localStorage.setItem('username', username);
+            // 跳转到首页
+            window.location.href = '/';
+          } else {
+            // 登录失败
+            document.getElementById('login-tip').innerText = data.msg || '登录失败';
+            document.getElementById('login-tip').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('登录请求错误:', error);
+          document.getElementById('login-tip').innerText = '网络错误，请稍后重试';
+          document.getElementById('login-tip').style.display = 'block';
+        });
+    });
+
+    // 注册链接
+    document.getElementById('register-link').addEventListener('click', function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+
+      if (!username) {
+        document.getElementById('login-tip').innerText = '请输入要注册的用户名';
+        document.getElementById('login-tip').style.display = 'block';
+        return;
+      }
+
+      // 调用后端注册API
+      fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 0) {
+            // 注册成功，自动登录
+            localStorage.setItem('userId', data.user_id);
+            localStorage.setItem('username', username);
+            alert('注册成功！');
+            window.location.href = '/';
+          } else {
+            // 注册失败
+            document.getElementById('login-tip').innerText = data.msg || '注册失败';
+            document.getElementById('login-tip').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('注册请求错误:', error);
+          document.getElementById('login-tip').innerText = '网络错误，请稍后重试';
+          document.getElementById('login-tip').style.display = 'block';
+        });
     });
   </script>
 </body>
+
 </html>

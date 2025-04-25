@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>简易论坛</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo">简易论坛</div>
+        <input class="search" type="text" id="searchInput" placeholder="搜索你感兴趣的内容">
+        <div class="user">
+            <button id="loginBtn">登录</button>
+            <button id="writeBtn" style="margin-left: 10px; background:#28a745;">发帖</button>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <aside class="left">
+            <ul>
+                <li id="homeLink">首页</li>
+                <li id="hotLink">热门</li>
+                <li id="followLink">关注</li>
+            </ul>
+        </aside>
+
+        <main class="center">
+            <div class="feed" id="postList">
+                <!-- 帖子将通过JavaScript动态加载 -->
+                <div class="question-card">
+                    <h3>欢迎使用简易论坛</h3>
+                    <p>正在加载帖子列表...</p>
+                </div>
+            </div>
+        </main>
+
+        <aside class="right">
+            <div class="recommend">
+                <h4>推荐内容</h4>
+                <ul>
+                    <li>今日热门话题</li>
+                    <li>每周精选</li>
+                    <li>近期活动</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        &copy; 2025 简易论坛演示
+    </footer>
+
+    <script>
+        // 页面导航
+        document.getElementById('loginBtn').addEventListener('click', function () {
+            window.location.href = '/login';
+        });
+
+        document.getElementById('writeBtn').addEventListener('click', function () {
+            window.location.href = '/write';
+        });
+
+        // 加载帖子列表
+        window.onload = function () {
+            fetch('/api/posts')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 0) {
+                        const postListDiv = document.getElementById('postList');
+                        postListDiv.innerHTML = ''; // 清空加载提示
+
+                        if (data.posts.length === 0) {
+                            postListDiv.innerHTML = '<div class="question-card"><h3>暂无帖子</h3><p>快来发布第一篇帖子吧！</p></div>';
+                            return;
+                        }
+
+                        // 渲染帖子列表
+                        data.posts.forEach(post => {
+                            const date = new Date(post.create_time);
+                            const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+
+                            const postCard = document.createElement('div');
+                            postCard.className = 'question-card';
+                            postCard.innerHTML = `
+                <h3>${post.title}</h3>
+                <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
+                <div style="margin-top: 10px; font-size: 14px; color: #888;">
+                  <span>用户ID: ${post.user_id}</span> | 
+                  <span>发布于: ${formattedDate}</span> | 
+                  <span>👍 ${post.like_count}</span> | 
+                  <span>💬 ${post.comment_count}</span>
+                </div>
+              `;
+
+                            // 点击帖子跳转到详情页
+                            postCard.style.cursor = 'pointer';
+                            postCard.addEventListener('click', function () {
+                                window.location.href = `/blog/${post.id}`;
+                            });
+
+                            postListDiv.appendChild(postCard);
+                        });
+                    } else {
+                        console.error('加载帖子失败:', data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error('网络错误:', error);
+                    document.getElementById('postList').innerHTML =
+                        '<div class="question-card"><h3>加载失败</h3><p>请检查网络连接后重试</p></div>';
+                });
+        };
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const searchTerm = this.value.trim();
+                if (searchTerm) {
+                    window.location.href = `/?key=${encodeURIComponent(searchTerm)}`;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

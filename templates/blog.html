@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>帖子详情 - 简易论坛</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='blog.css') }}">
+    <style>
+        .comment-section {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .comment-form {
+            margin-bottom: 30px;
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .comment-btn {
+            background: #056de8;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 20px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .comment-btn:hover {
+            background: #2252c4;
+        }
+
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .comment-item {
+            padding: 15px;
+            background: #f9f9fb;
+            border-radius: 8px;
+        }
+
+        .comment-user {
+            color: #056de8;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .comment-content {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .comment-meta {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .like-btn {
+            display: inline-flex;
+            align-items: center;
+            background: #f0f4ff;
+            color: #056de8;
+            border: 1px solid #e0e9ff;
+            border-radius: 20px;
+            padding: 8px 20px;
+            margin-right: 15px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .like-btn:hover {
+            background: #e0e9ff;
+        }
+
+        .action-bar {
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            color: #666;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            font-size: 15px;
+        }
+
+        .back-btn:hover {
+            color: #056de8;
+        }
+
+        .no-comments {
+            color: #999;
+            font-style: italic;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo" id="homeLink">简易论坛</div>
+        <div class="user" id="userInfo">
+            <!-- 用户信息会在JavaScript中动态填充 -->
+        </div>
+    </header>
+
+    <div class="main-detail">
+        <article class="article-content">
+            <h1 id="post-title">加载中...</h1>
+            <div class="article-meta">
+                <span class="author" id="author-name">用户</span>
+                <span class="date" id="post-date">发布时间</span>
+            </div>
+
+            <div class="article-body" id="post-content">
+                内容加载中...
+            </div>
+
+            <div class="action-bar">
+                <button class="like-btn" id="likeBtn">
+                    👍 <span id="likeCount">0</span>
+                </button>
+                <a href="/" class="back-btn">← 返回首页</a>
+            </div>
+
+            <div class="comment-section">
+                <h3>评论区</h3>
+
+                <div class="comment-form" id="commentForm">
+                    <textarea class="comment-input" id="commentInput" placeholder="写下你的评论..."></textarea>
+                    <button class="comment-btn" id="submitComment">提交评论</button>
+                </div>
+
+                <div class="comment-list" id="commentList">
+                    <!-- 评论将通过JavaScript动态加载 -->
+                    <div class="no-comments" id="noComments">暂无评论，来抢沙发吧</div>
+                </div>
+            </div>
+        </article>
+
+        <div class="author-info">
+            <div class="author-card">
+                <div class="author-avatar"></div>
+                <h4 id="sidebar-username">用户</h4>
+                <p class="bio">欢迎来到简易论坛！</p>
+                <button class="follow-btn">关注</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取当前帖子ID
+        const postId = "{{ post_id }}";
+        let currentUserId = null;
+
+        // 页面加载完成后获取帖子详情
+        window.onload = function () {
+            // 检查登录状态
+            currentUserId = localStorage.getItem('userId');
+            const username = localStorage.getItem('username');
+
+            if (currentUserId && username) {
+                document.getElementById('userInfo').innerHTML = `
+          <span style="margin-right:15px;">${username}</span>
+          <button id="logoutBtn" style="background:#f0f0f0;color:#333;">退出</button>
+        `;
+
+                // 退出登录
+                document.getElementById('logoutBtn').addEventListener('click', function () {
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('username');
+                    window.location.reload();
+                });
+            } else {
+                document.getElementById('userInfo').innerHTML = `
+          <button id="loginBtn">登录</button>
+        `;
+
+                document.getElementById('loginBtn').addEventListener('click', function () {
+                    window.location.href = '/login';
+                });
+            }
+
+            // 加载帖子详情
+            loadPostDetail();
+
+            // 加载评论列表
+            loadComments();
+
+            // 设置返回首页链接
+            document.getElementById('homeLink').addEventListener('click', function () {
+                window.location.href = '/';
+            });
+
+            // 点赞功能
+            document.getElementById('likeBtn').addEventListener('click', function () {
+                if (!currentUserId) {
+                    alert('请先登录再点赞！');
+                    return;
+                }
+
+                fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 0) {
+                            document.getElementById('likeCount').innerText = data.like_count;
+                        } else {
+                            alert('点赞失败: ' + (data.msg || '未知错误'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('点赞请求错误:', error);
+                    });
+            });
+
+            // 提交评论
+            document.getElementById('submitComment').addEventListener('click', submitComment);
+        };
+
+        // 加载帖子详情
+        function loadPostDetail() {
+            fetch(`/api/posts/${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 0) {
+                        const post = data.post;
+
+                        // 设置标题和内容
+                        document.getElementById('post-title').innerText = post.title;
+                        document.getElementById('post-content').innerText = post.content;
+
+                        // 设置点赞数
+                        document.getElementById('likeCount').innerText = post.like_count;
+
+                        // 设置作者信息（这里只显示ID，实际项目中可以获取用户名）
+                        document.getElementById('author-name').innerText = `用户ID: ${post.user_id}`;
+                        document.getElementById('sidebar-username').innerText = `用户ID: ${post.user_id}`;
+
+                        // 设置发布日期
+                        const date = new Date(post.create_time);
+                        const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+                        document.getElementById('post-date').innerText = formattedDate;
+
+                        // 设置页面标题
+                        document.title = `${post.title} - 简易论坛`;
+                    } else {
+                        alert('加载帖子失败: ' + (data.msg || '未知错误'));
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载帖子详情错误:', error);
+                    document.getElementById('post-content').innerText = '加载失败，请刷新页面重试';
+                });
+        }
+
+        // 加载评论列表
+        function loadComments() {
+            fetch(`/api/comments?post_id=${postId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 0) {
+                        const comments = data.comments;
+                        const commentListDiv = document.getElementById('commentList');
+                        const noCommentsDiv = document.getElementById('noComments');
+
+                        if (comments.length === 0) {
+                            noCommentsDiv.style.display = 'block';
+                            return;
+                        }
+
+                        // 隐藏"暂无评论"提示
+                        noCommentsDiv.style.display = 'none';
+
+                        // 清空现有评论
+                        commentListDiv.innerHTML = '';
+
+                        // 添加评论
+                        comments.forEach(comment => {
+                            const date = new Date(comment.create_time);
+                            const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+                            const commentDiv = document.createElement('div');
+                            commentDiv.className = 'comment-item';
+                            commentDiv.innerHTML = `
+                <div class="comment-user">用户ID: ${comment.user_id}</div>
+                <div class="comment-content">${comment.content}</div>
+                <div class="comment-meta">
+                  <span>${formattedDate}</span>
+                  <span style="margin-left:10px;">👍 ${comment.like_count}</span>
+                </div>
+              `;
+
+                            commentListDiv.appendChild(commentDiv);
+                        });
+                    } else {
+                        console.error('加载评论失败:', data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error('评论请求错误:', error);
+                    document.getElementById('commentList').innerHTML =
+                        '<div class="comment-item">加载评论失败，请刷新页面重试</div>';
+                });
+        }
+
+        // 提交评论
+        function submitComment() {
+            if (!currentUserId) {
+                alert('请先登录再发表评论！');
+                return;
+            }
+
+            const commentContent = document.getElementById('commentInput').value.trim();
+            if (!commentContent) {
+                alert('评论内容不能为空！');
+                return;
+            }
+
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    post_id: parseInt(postId),
+                    user_id: parseInt(currentUserId),
+                    content: commentContent
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 0) {
+                        // 评论成功，清空输入框
+                        document.getElementById('commentInput').value = '';
+
+                        // 重新加载评论列表
+                        loadComments();
+                    } else {
+                        alert('评论失败: ' + (data.msg || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('评论提交错误:', error);
+                    alert('网络错误，请稍后重试');
+                });
+        }
+    </script>
+</body>
+
+</html>
