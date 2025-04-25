@@ -17,6 +17,11 @@ class User(db.Model): # 用户
     create_time = db.Column(db.DateTime,
                             default=lambda: datetime.now(timezone.utc))#创建时间
     post_count = db.Column(db.Integer, default=0)             # 发帖数量
+    password_hash = db.Column(db.String(128))
+    is_admin = db.Column(db.Boolean, default=False)
+    bio = db.Column(db.String(255))
+    last_login = db.Column(db.DateTime)
+
 
 
 class Post(db.Model): #
@@ -29,6 +34,16 @@ class Post(db.Model): #
     like_count = db.Column(db.Integer, default=0)               # 点赞数
     comment_count = db.Column(db.Integer, default=0)            # 评论数
 
+    # ...
+    tag = db.Column(db.String(64))                       # 帖子标签或分类
+    is_top = db.Column(db.Boolean, default=False)        # 是否置顶
+    is_essence = db.Column(db.Boolean, default=False)    # 是否加精
+    view_count = db.Column(db.Integer, default=0)        # 浏览数
+    status = db.Column(db.Integer, default=0)            # 审核
+
+
+
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))  # 评论属于哪条帖子
@@ -37,6 +52,9 @@ class Comment(db.Model):
     create_time = db.Column(db.DateTime,
                             default=lambda: datetime.now(timezone.utc))#创建时间
     like_count = db.Column(db.Integer, default=0)              # 点赞数
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'))  # 父评论ID
+    is_deleted = db.Column(db.Boolean, default=False)  # 是否被删除
+    status = db.Column(db.Integer, default=0)  # 审核
 
 
 def print_all_users():
