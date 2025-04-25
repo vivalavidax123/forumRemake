@@ -9,8 +9,8 @@ user_api = Blueprint('user_api', __name__)
 def register():
     data = request.get_json()
     username = data.get('username')
-    # email = data.get('email', '') 邮箱，暂时不开
-    # avatar = data.get('avatar', '') 用户头像，暂时不开
+    email = data.get('email', '')
+    avatar = data.get('avatar', '')
     if not username:
         return jsonify({'status': 1, 'msg': '用户名不能为空'})
     if User.query.filter_by(username=username).first():
