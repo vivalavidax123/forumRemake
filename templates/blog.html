@@ -120,6 +120,22 @@
             background: #f0f0f0 !important;
             color: #333 !important;
         }
+        
+        /* 新增：评论提交中的加载状态 */
+        .submitting {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        /* 新增：评论动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .new-comment {
+            animation: fadeIn 0.5s ease-out;
+        }
     </style>
 </head>
 
@@ -180,7 +196,7 @@
         const postId = "{{ post_id }}";
         let currentUserId = null;
         let currentUsername = null;
-
+        
         // 页面加载完成后获取帖子详情
         window.onload = function() {
             // 检查登录状态
@@ -307,16 +323,31 @@
 
         // 加载评论列表
         function loadComments() {
+            // 防止在提交评论后立即触发多次加载
+            if (window.isLoadingComments) {
+                return;
+            }
+            
+            window.isLoadingComments = true;
+            
             fetch(`/api/comments?post_id=${postId}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应异常，状态码: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    window.isLoadingComments = false;
+                    
                     if (data.status === 0) {
-                        const comments = data.comments;
+                        const comments = data.comments || [];
                         const commentListDiv = document.getElementById('commentList');
                         const noCommentsDiv = document.getElementById('noComments');
 
                         if (comments.length === 0) {
                             noCommentsDiv.style.display = 'block';
+                            commentListDiv.innerHTML = '';
                             return;
                         }
 
@@ -325,56 +356,166 @@
 
                         // 清空现有评论
                         commentListDiv.innerHTML = '';
+                        
+                        // 按照创建时间倒序排序（最新的显示在最前面）
+                        comments.sort((a, b) => {
+                            const dateA = new Date(a.create_time || 0);
+                            const dateB = new Date(b.create_time || 0);
+                            return dateB - dateA; // 倒序排列
+                        });
 
-                        // 添加评论
+                        // 添加每条评论 - 直接添加DOM，不使用Promise.all
                         comments.forEach(comment => {
-                            const date = new Date(comment.create_time);
-                            const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-
-                            // 获取评论用户名
-                            fetch(`/api/user?user_id=${comment.user_id}`)
-                                .then(response => response.json())
-                                .then(userData => {
-                                    const username = userData.status === 0 ? userData.user.username : `用户ID: ${comment.user_id}`;
-                                    
-                                    const commentDiv = document.createElement('div');
-                                    commentDiv.className = 'comment-item';
-                                    commentDiv.innerHTML = `
-                                        <div class="comment-user">${username}</div>
-                                        <div class="comment-content">${comment.content}</div>
-                                        <div class="comment-meta">
-                                            <span>${formattedDate}</span>
-                                            <span style="margin-left:10px;">👍 ${comment.like_count}</span>
-                                        </div>
-                                    `;
-                                    
-                                    commentListDiv.appendChild(commentDiv);
-                                })
-                                .catch(error => {
-                                    // 如果获取用户信息失败，仍然显示评论，但使用用户ID
-                                    const commentDiv = document.createElement('div');
-                                    commentDiv.className = 'comment-item';
-                                    commentDiv.innerHTML = `
-                                        <div class="comment-user">用户ID: ${comment.user_id}</div>
-                                        <div class="comment-content">${comment.content}</div>
-                                        <div class="comment-meta">
-                                            <span>${formattedDate}</span>
-                                            <span style="margin-left:10px;">👍 ${comment.like_count}</span>
-                                        </div>
-                                    `;
-                                    
-                                    commentListDiv.appendChild(commentDiv);
-                                });
+                            try {
+                                const date = new Date(comment.create_time || new Date());
+                                const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                                
+                                // 创建评论元素
+                                const commentDiv = document.createElement('div');
+                                commentDiv.className = 'comment-item';
+                                commentDiv.dataset.id = comment.id;
+                                
+                                // 先使用用户ID作为占位符
+                                commentDiv.innerHTML = `
+                                    <div class="comment-user">用户ID: ${comment.user_id}</div>
+                                    <div class="comment-content">${comment.content || ''}</div>
+                                    <div class="comment-meta">
+                                        <span>${formattedDate}</span>
+                                        <span style="margin-left:10px; cursor:pointer;">👍 ${comment.like_count || 0}</span>
+                                    </div>
+                                `;
+                                
+                                commentListDiv.appendChild(commentDiv);
+                                
+                                // 添加点赞事件
+                                const likeSpan = commentDiv.querySelector('.comment-meta span:last-child');
+                                if (likeSpan) {
+                                    likeSpan.addEventListener('click', function() {
+                                        if (!currentUserId) {
+                                            alert('请先登录再点赞！');
+                                            return;
+                                        }
+                                        
+                                        fetch(`/api/comments/${comment.id}/like`, {
+                                            method: 'POST'
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.status === 0) {
+                                                likeSpan.innerHTML = `👍 ${data.like_count}`;
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('点赞失败:', error);
+                                        });
+                                    });
+                                }
+                                
+                                // 异步获取用户名 - 不会影响主流程
+                                if (comment.user_id.toString() === currentUserId) {
+                                    // 本人评论直接使用当前用户名
+                                    const userElement = commentDiv.querySelector('.comment-user');
+                                    if (userElement) {
+                                        userElement.textContent = currentUsername;
+                                    }
+                                } else {
+                                    // 其他用户评论异步获取用户名
+                                    fetch(`/api/user?user_id=${comment.user_id}`)
+                                    .then(response => response.json())
+                                    .then(userData => {
+                                        if (userData.status === 0 && userData.user) {
+                                            const userElement = commentDiv.querySelector('.comment-user');
+                                            if (userElement) {
+                                                userElement.textContent = userData.user.username || `用户ID: ${comment.user_id}`;
+                                            }
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.log('获取用户名失败，使用ID替代');
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('处理评论时出错:', error);
+                            }
                         });
                     } else {
-                        console.error('加载评论失败:', data.msg);
+                        console.error('加载评论API返回错误:', data.msg);
                     }
                 })
                 .catch(error => {
+                    window.isLoadingComments = false;
                     console.error('评论请求错误:', error);
-                    document.getElementById('commentList').innerHTML =
-                        '<div class="comment-item">加载评论失败，请刷新页面重试</div>';
+                    
+                    // 只有在没有显示任何评论的情况下才显示错误提示
+                    const commentListDiv = document.getElementById('commentList');
+                    if (commentListDiv.children.length === 0 || 
+                        (commentListDiv.children.length === 1 && commentListDiv.children[0].id === 'noComments')) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'comment-item';
+                        errorDiv.style.color = '#f56c6c';
+                        errorDiv.textContent = '加载评论失败，请刷新页面重试';
+                        
+                        commentListDiv.innerHTML = '';
+                        commentListDiv.appendChild(errorDiv);
+                    }
                 });
+        }
+        
+        // 为评论添加点赞事件
+        function addLikeEventToComment(commentElement, commentId) {
+            const likeSpan = commentElement.querySelector('.comment-meta span:last-child');
+            if (likeSpan) {
+                likeSpan.addEventListener('click', function() {
+                    if (!currentUserId) {
+                        alert('请先登录再点赞！');
+                        return;
+                    }
+                    
+                    fetch(`/api/comments/${commentId}/like`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 0) {
+                                // 更新点赞数
+                                likeSpan.innerHTML = `👍 ${data.like_count}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('评论点赞错误:', error);
+                        });
+                });
+            }
+        }
+
+        // 添加评论点赞事件
+        function addCommentLikeEvents() {
+            document.querySelectorAll('.comment-item').forEach(item => {
+                const likeSpan = item.querySelector('.comment-meta span:last-child');
+                likeSpan.style.cursor = 'pointer';
+                
+                likeSpan.addEventListener('click', function() {
+                    if (!currentUserId) {
+                        alert('请先登录再点赞！');
+                        return;
+                    }
+                    
+                    const commentId = item.dataset.id;
+                    fetch(`/api/comments/${commentId}/like`, {
+                        method: 'POST'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 0) {
+                                // 更新点赞数
+                                likeSpan.innerHTML = `👍 ${data.like_count}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('评论点赞错误:', error);
+                        });
+                });
+            });
         }
 
         // 提交评论
@@ -389,34 +530,162 @@
                 alert('评论内容不能为空！');
                 return;
             }
+            
+            // 禁用提交按钮，防止重复提交
+            const submitBtn = document.getElementById('submitComment');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('submitting');
+            submitBtn.textContent = '提交中...';
 
+            // 构造评论数据
+            const commentData = {
+                post_id: parseInt(postId),
+                user_id: parseInt(currentUserId),
+                content: commentContent
+            };
+
+            // 发送评论请求
             fetch('/api/comments', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    post_id: parseInt(postId),
-                    user_id: parseInt(currentUserId),
-                    content: commentContent
-                })
+                body: JSON.stringify(commentData)
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 0) {
-                        // 评论成功，清空输入框
-                        document.getElementById('commentInput').value = '';
-
-                        // 重新加载评论列表
-                        loadComments();
-                    } else {
-                        alert('评论失败: ' + (data.msg || '未知错误'));
+            .then(response => {
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error('网络响应异常');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 0) {
+                    // 评论成功，清空输入框
+                    document.getElementById('commentInput').value = '';
+                    
+                    // 立即在界面上添加评论（不等待刷新）
+                    const tempComment = {
+                        id: data.comment_id,
+                        user_id: currentUserId,
+                        content: commentContent,
+                        create_time: new Date().toISOString(),
+                        like_count: 0
+                    };
+                    
+                    // 添加新评论到DOM
+                    addNewComment(tempComment, true);
+                    
+                    // 检查是否有@deepseek或@bot，如果有，等待一段时间后刷新获取AI回复
+                    const hasAIMention = commentContent.toLowerCase().includes('@deepseek') || 
+                                        commentContent.toLowerCase().includes('@bot');
+                    
+                    if (hasAIMention) {
+                        // 显示AI正在回复的提示
+                        const aiResponseHint = document.createElement('div');
+                        aiResponseHint.id = 'ai-response-hint';
+                        aiResponseHint.className = 'comment-item new-comment';
+                        aiResponseHint.innerHTML = `
+                            <div class="comment-user">DeepSeek</div>
+                            <div class="comment-content">AI正在生成回复...</div>
+                        `;
+                        document.getElementById('commentList').appendChild(aiResponseHint);
+                        
+                        // 等待AI响应时间后刷新评论列表
+                        setTimeout(() => {
+                            // 移除提示
+                            const hint = document.getElementById('ai-response-hint');
+                            if (hint) hint.remove();
+                            
+                            // 重新加载所有评论
+                            loadComments();
+                        }, 2000); // 增加等待时间到2秒
                     }
-                })
-                .catch(error => {
-                    console.error('评论提交错误:', error);
-                    alert('网络错误，请稍后重试');
-                });
+                } else {
+                    alert('评论失败: ' + (data.msg || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('评论提交错误:', error);
+                alert('网络错误，请稍后重试');
+            })
+            .finally(() => {
+                // 无论成功或失败，恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('submitting');
+                submitBtn.textContent = '提交评论';
+            });
+        }
+        
+        // 添加新评论到列表（不刷新所有评论）
+        function addNewComment(comment, isNew = false) {
+            const commentListDiv = document.getElementById('commentList');
+            const noCommentsDiv = document.getElementById('noComments');
+            
+            try {
+                // 隐藏"暂无评论"提示
+                if (noCommentsDiv) {
+                    noCommentsDiv.style.display = 'none';
+                }
+                
+                // 格式化日期
+                const date = new Date(comment.create_time || new Date());
+                const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                // 创建评论元素
+                const commentDiv = document.createElement('div');
+                commentDiv.className = isNew ? 'comment-item new-comment' : 'comment-item';
+                commentDiv.dataset.id = comment.id;
+                
+                // 当前用户评论直接使用已知用户名
+                commentDiv.innerHTML = `
+                    <div class="comment-user">${currentUsername || ('用户ID: ' + comment.user_id)}</div>
+                    <div class="comment-content">${comment.content}</div>
+                    <div class="comment-meta">
+                        <span>${formattedDate}</span>
+                        <span style="margin-left:10px; cursor:pointer;">👍 ${comment.like_count || 0}</span>
+                    </div>
+                `;
+                
+                // 添加到DOM - 放在最前面
+                if (commentListDiv.firstChild) {
+                    commentListDiv.insertBefore(commentDiv, commentListDiv.firstChild);
+                } else {
+                    commentListDiv.appendChild(commentDiv);
+                }
+                
+                // 为点赞按钮添加事件
+                const likeSpan = commentDiv.querySelector('.comment-meta span:last-child');
+                if (likeSpan) {
+                    likeSpan.addEventListener('click', function() {
+                        if (!currentUserId) {
+                            alert('请先登录再点赞！');
+                            return;
+                        }
+                        
+                        fetch(`/api/comments/${comment.id}/like`, {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 0) {
+                                // 更新点赞数
+                                likeSpan.innerHTML = `👍 ${data.like_count}`;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('评论点赞错误:', error);
+                        });
+                    });
+                }
+                
+                // 如果是新评论，滚动到评论位置
+                if (isNew) {
+                    commentDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } catch (error) {
+                console.error('添加新评论出错:', error);
+            }
         }
     </script>
 </body>
