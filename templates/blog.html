@@ -111,6 +111,15 @@
             font-style: italic;
             margin: 20px 0;
         }
+        
+        .user-info {
+            margin-right: 15px;
+        }
+        
+        .logout-btn {
+            background: #f0f0f0 !important;
+            color: #333 !important;
+        }
     </style>
 </head>
 
@@ -170,32 +179,44 @@
         // 获取当前帖子ID
         const postId = "{{ post_id }}";
         let currentUserId = null;
+        let currentUsername = null;
 
         // 页面加载完成后获取帖子详情
-        window.onload = function () {
+        window.onload = function() {
             // 检查登录状态
             currentUserId = localStorage.getItem('userId');
-            const username = localStorage.getItem('username');
+            currentUsername = localStorage.getItem('username');
 
-            if (currentUserId && username) {
+            if (currentUserId && currentUsername) {
                 document.getElementById('userInfo').innerHTML = `
-          <span style="margin-right:15px;">${username}</span>
-          <button id="logoutBtn" style="background:#f0f0f0;color:#333;">退出</button>
-        `;
+                    <span class="user-info">欢迎，${currentUsername}</span>
+                    <button id="writeBtn" style="margin-right:15px; background:#28a745;">发帖</button>
+                    <button id="logoutBtn" class="logout-btn">退出</button>
+                `;
 
                 // 退出登录
-                document.getElementById('logoutBtn').addEventListener('click', function () {
+                document.getElementById('logoutBtn').addEventListener('click', function() {
                     localStorage.removeItem('userId');
                     localStorage.removeItem('username');
                     window.location.reload();
                 });
+                
+                // 添加发帖按钮事件
+                document.getElementById('writeBtn').addEventListener('click', function() {
+                    window.location.href = '/write';
+                });
             } else {
                 document.getElementById('userInfo').innerHTML = `
-          <button id="loginBtn">登录</button>
-        `;
+                    <button id="loginBtn">登录</button>
+                    <button id="registerBtn" style="margin-left: 10px;">注册</button>
+                `;
 
-                document.getElementById('loginBtn').addEventListener('click', function () {
+                document.getElementById('loginBtn').addEventListener('click', function() {
                     window.location.href = '/login';
+                });
+                
+                document.getElementById('registerBtn').addEventListener('click', function() {
+                    window.location.href = '/register';
                 });
             }
 
@@ -206,12 +227,12 @@
             loadComments();
 
             // 设置返回首页链接
-            document.getElementById('homeLink').addEventListener('click', function () {
+            document.getElementById('homeLink').addEventListener('click', function() {
                 window.location.href = '/';
             });
 
             // 点赞功能
-            document.getElementById('likeBtn').addEventListener('click', function () {
+            document.getElementById('likeBtn').addEventListener('click', function() {
                 if (!currentUserId) {
                     alert('请先登录再点赞！');
                     return;
@@ -252,9 +273,19 @@
                         // 设置点赞数
                         document.getElementById('likeCount').innerText = post.like_count;
 
-                        // 设置作者信息（这里只显示ID，实际项目中可以获取用户名）
-                        document.getElementById('author-name').innerText = `用户ID: ${post.user_id}`;
-                        document.getElementById('sidebar-username').innerText = `用户ID: ${post.user_id}`;
+                        // 获取作者信息
+                        fetch(`/api/user?user_id=${post.user_id}`)
+                            .then(response => response.json())
+                            .then(userData => {
+                                if (userData.status === 0) {
+                                    const authorName = userData.user.username || `用户ID: ${post.user_id}`;
+                                    document.getElementById('author-name').innerText = authorName;
+                                    document.getElementById('sidebar-username').innerText = authorName;
+                                }
+                            })
+                            .catch(error => {
+                                console.error('获取作者信息错误:', error);
+                            });
 
                         // 设置发布日期
                         const date = new Date(post.create_time);
@@ -300,18 +331,40 @@
                             const date = new Date(comment.create_time);
                             const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 
-                            const commentDiv = document.createElement('div');
-                            commentDiv.className = 'comment-item';
-                            commentDiv.innerHTML = `
-                <div class="comment-user">用户ID: ${comment.user_id}</div>
-                <div class="comment-content">${comment.content}</div>
-                <div class="comment-meta">
-                  <span>${formattedDate}</span>
-                  <span style="margin-left:10px;">👍 ${comment.like_count}</span>
-                </div>
-              `;
-
-                            commentListDiv.appendChild(commentDiv);
+                            // 获取评论用户名
+                            fetch(`/api/user?user_id=${comment.user_id}`)
+                                .then(response => response.json())
+                                .then(userData => {
+                                    const username = userData.status === 0 ? userData.user.username : `用户ID: ${comment.user_id}`;
+                                    
+                                    const commentDiv = document.createElement('div');
+                                    commentDiv.className = 'comment-item';
+                                    commentDiv.innerHTML = `
+                                        <div class="comment-user">${username}</div>
+                                        <div class="comment-content">${comment.content}</div>
+                                        <div class="comment-meta">
+                                            <span>${formattedDate}</span>
+                                            <span style="margin-left:10px;">👍 ${comment.like_count}</span>
+                                        </div>
+                                    `;
+                                    
+                                    commentListDiv.appendChild(commentDiv);
+                                })
+                                .catch(error => {
+                                    // 如果获取用户信息失败，仍然显示评论，但使用用户ID
+                                    const commentDiv = document.createElement('div');
+                                    commentDiv.className = 'comment-item';
+                                    commentDiv.innerHTML = `
+                                        <div class="comment-user">用户ID: ${comment.user_id}</div>
+                                        <div class="comment-content">${comment.content}</div>
+                                        <div class="comment-meta">
+                                            <span>${formattedDate}</span>
+                                            <span style="margin-left:10px;">👍 ${comment.like_count}</span>
+                                        </div>
+                                    `;
+                                    
+                                    commentListDiv.appendChild(commentDiv);
+                                });
                         });
                     } else {
                         console.error('加载评论失败:', data.msg);

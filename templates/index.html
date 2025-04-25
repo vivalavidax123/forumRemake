@@ -5,15 +5,31 @@
     <meta charset="UTF-8">
     <title>简易论坛</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <style>
+        .user-info {
+            margin-left: 15px;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .logout-btn {
+            margin-left: 10px;
+            background: #f0f0f0 !important;
+            color: #333 !important;
+        }
+        
+        .logout-btn:hover {
+            background: #e0e0e0 !important;
+        }
+    </style>
 </head>
 
 <body>
     <header class="navbar">
         <div class="logo">简易论坛</div>
         <input class="search" type="text" id="searchInput" placeholder="搜索你感兴趣的内容">
-        <div class="user">
-            <button id="loginBtn">登录</button>
-            <button id="writeBtn" style="margin-left: 10px; background:#28a745;">发帖</button>
+        <div class="user" id="userArea">
+            <!-- 用户区域由JS动态填充 -->
         </div>
     </header>
 
@@ -53,18 +69,72 @@
     </footer>
 
     <script>
-        // 页面导航
-        document.getElementById('loginBtn').addEventListener('click', function () {
-            window.location.href = '/login';
-        });
+        // 更新顶部用户区域显示
+        function updateUserArea() {
+            const userId = localStorage.getItem('userId');
+            const username = localStorage.getItem('username');
+            const userArea = document.getElementById('userArea');
+            
+            if (userId && username) {
+                // 已登录状态
+                userArea.innerHTML = `
+                    <span class="user-info">欢迎，${username}</span>
+                    <button id="writeBtn" style="margin-left: 10px; background:#28a745;">发帖</button>
+                    <button id="logoutBtn" class="logout-btn">退出</button>
+                `;
+                
+                // 添加退出登录事件
+                document.getElementById('logoutBtn').addEventListener('click', function() {
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('username');
+                    window.location.reload(); // 刷新页面
+                });
+                
+                // 发帖按钮事件
+                document.getElementById('writeBtn').addEventListener('click', function() {
+                    window.location.href = '/write';
+                });
+            } else {
+                // 未登录状态
+                userArea.innerHTML = `
+                    <button id="loginBtn">登录</button>
+                    <button id="registerBtn" style="margin-left: 10px;">注册</button>
+                `;
+                
+                // 添加登录和注册按钮事件
+                document.getElementById('loginBtn').addEventListener('click', function() {
+                    window.location.href = '/login';
+                });
+                
+                document.getElementById('registerBtn').addEventListener('click', function() {
+                    window.location.href = '/register';
+                });
+            }
+        }
 
-        document.getElementById('writeBtn').addEventListener('click', function () {
-            window.location.href = '/write';
+        // 页面导航
+        document.getElementById('homeLink').addEventListener('click', function() {
+            window.location.href = '/';
         });
 
         // 加载帖子列表
-        window.onload = function () {
-            fetch('/api/posts')
+        window.onload = function() {
+            // 更新用户区域显示
+            updateUserArea();
+            
+            // 获取搜索参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchKey = urlParams.get('key');
+            
+            // 构建API请求URL
+            let apiUrl = '/api/posts';
+            if (searchKey) {
+                apiUrl += `?key=${encodeURIComponent(searchKey)}`;
+                // 如果有搜索关键词，更新搜索框
+                document.getElementById('searchInput').value = searchKey;
+            }
+            
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 0) {
@@ -96,7 +166,7 @@
 
                             // 点击帖子跳转到详情页
                             postCard.style.cursor = 'pointer';
-                            postCard.addEventListener('click', function () {
+                            postCard.addEventListener('click', function() {
                                 window.location.href = `/blog/${post.id}`;
                             });
 
@@ -114,7 +184,7 @@
         };
 
         // 搜索功能
-        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const searchTerm = this.value.trim();
                 if (searchTerm) {

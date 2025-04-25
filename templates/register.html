@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <title>注册 - 简易论坛</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+  <style>
+    .login-container {
+      width: 380px;
+    }
+    #register-form input {
+      width: 260px;
+    }
+    #register-form button {
+      width: 260px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="title">
+      <h2>注册新账号</h2>
+    </div>
+    <form id="register-form">
+      <input type="text" id="username" placeholder="请输入用户名" required>
+      <input type="password" id="password" placeholder="请输入密码" required>
+      <input type="password" id="confirm-password" placeholder="请确认密码" required>
+      <input type="email" id="email" placeholder="请输入邮箱（选填）">
+      <button type="submit">注册</button>
+    </form>
+    <div id="register-tip" style="color:#ff4d4f;margin-top:-10px;display:none;">注册失败</div>
+    <div style="margin-top:10px;">
+      <a href="/login" style="color:#056de8;text-decoration:none;">已有账号？立即登录</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('register-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const confirmPassword = document.getElementById('confirm-password').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if (!username) {
+        document.getElementById('register-tip').innerText = '请输入用户名';
+        document.getElementById('register-tip').style.display = 'block';
+        return;
+      }
+
+      if (!password) {
+        document.getElementById('register-tip').innerText = '请输入密码';
+        document.getElementById('register-tip').style.display = 'block';
+        return;
+      }
+
+      if (password.length < 6) {
+        document.getElementById('register-tip').innerText = '密码长度不能少于6位';
+        document.getElementById('register-tip').style.display = 'block';
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        document.getElementById('register-tip').innerText = '两次输入的密码不一致';
+        document.getElementById('register-tip').style.display = 'block';
+        return;
+      }
+
+      // 调用后端注册API
+      fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+          email: email
+        })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 0) {
+            // 注册成功，自动登录
+            localStorage.setItem('userId', data.user_id);
+            localStorage.setItem('username', username);
+            alert('注册成功！');
+            window.location.href = '/';
+          } else {
+            // 注册失败
+            document.getElementById('register-tip').innerText = data.msg || '注册失败';
+            document.getElementById('register-tip').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('注册请求错误:', error);
+          document.getElementById('register-tip').innerText = '网络错误，请稍后重试';
+          document.getElementById('register-tip').style.display = 'block';
+        });
+    });
+  </script>
+</body>
+
+</html>
