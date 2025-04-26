@@ -5,6 +5,16 @@ body {
   min-width: 1080px;  /* 或你想要的宽度 */
 
 }
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
 .user {
   display: flex;
   align-items: center;

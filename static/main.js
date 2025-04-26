@@ -53,13 +53,13 @@ function renderUserProfileNotLogin() {
         userProfile.innerHTML = `
             <img src="/static/avatar.png" class="avatar" id="avatar">
             <div class="user-info">
-                <div class="username" id="username" style="color:#2196f3; font-weight:bold;">Without login in</div>
+                <div class="username" id="username" style="color:#2196f3; font-weight:bold;">未登录</div>
                 <div class="stats">
                   <span>Blog <b id="postCount">0</b></span>
                   <span>Following <b id="followCount">0</b></span>
                 </div>
             </div>
-            <button class="write-btn" onclick="window.location.href='/login'">Login in</button>
+            <button class="write-btn" onclick="window.location.href='/login'">请登录</button>
         `;
     }
 }
@@ -68,7 +68,7 @@ function renderUserProfileLogin(user) {
     const userProfile = document.getElementById('userProfile');
     if (userProfile) {
         userProfile.innerHTML = `
-            <img src="${user.avatar || '/static/avatar.png'}" alt="image" class="avatar" id="avatar">
+            <img src="${user.avatar || '/static/avatar.png'}" alt="头像" class="avatar" id="avatar">
             <div class="user-info">
                 <div class="username" id="username" style="color:#2196f3; font-weight:bold;">${user.username}</div>
                 <div class="stats">
@@ -76,7 +76,7 @@ function renderUserProfileLogin(user) {
                   <span>Following <b id="followCount">${user.follow_count || 0}</b></span>
                 </div>
             </div>
-            <button class="write-btn" onclick="window.location.href='/write'">Write Blog</button>
+            <button class="write-btn" onclick="window.location.href='/write'">写文章</button>
         `;
     }
 }
@@ -93,7 +93,7 @@ function loadUserProfile() {
         .then(res => res.json())
         .then(data => {
             if (data.status === 0 && data.data) {
-                renderUserProfileLogin(data.data);
+                renderUserProfileLogin(data.data); // 这里一定要是 data.data
             } else {
                 renderUserProfileNotLogin();
             }
@@ -102,6 +102,11 @@ function loadUserProfile() {
             renderUserProfileNotLogin();
         });
 }
+
+// 页面加载后自动调用
+document.addEventListener('DOMContentLoaded', function () {
+    loadUserProfile();
+});
 
 // ========== 3. 帖子列表渲染 ==========
 
