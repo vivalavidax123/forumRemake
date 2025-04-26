@@ -4,7 +4,7 @@ import audit
 
 post_api = Blueprint('post_api', __name__)
 
-@post_api.route('/api/write', methods=['POST'])
+
 @post_api.route('/api/posts', methods=['POST'])
 def create_post():
     data = request.get_json()
@@ -29,7 +29,7 @@ def create_post():
 
 from sqlalchemy import or_
 
-@post_api.route('/api/write', methods=['GET'])
+
 @post_api.route('/api/posts', methods=['GET'])
 def get_posts():
     key = request.args.get('key', '')  # Get ?key=xxx parameter, default empty string
@@ -57,7 +57,7 @@ def get_posts():
         })
     return jsonify({'status': 0, 'posts': result})
 
-@post_api.route('/api/write/<int:post_id>', methods=['GET'])
+
 @post_api.route('/api/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
     post = Post.query.get(post_id)
@@ -74,7 +74,7 @@ def get_post(post_id):
     }
     return jsonify({'status': 0, 'post': data})
 
-@post_api.route('/api/write/user/<int:user_id>', methods=['GET'])
+
 @post_api.route('/api/posts/user/<int:user_id>', methods=['GET'])
 def get_user_posts(user_id):
     posts = Post.query.filter_by(user_id=user_id).order_by(Post.create_time.desc()).all()
