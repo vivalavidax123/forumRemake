@@ -126,21 +126,33 @@ function loadPostDetail() {
                 document.getElementById('post-title').innerText = post.title;
                 document.getElementById('post-content').innerText = post.content;
                 document.getElementById('likeCount').innerText = post.like_count;
-                // 获取作者信息
+
+                // 获取作者信息，并动态渲染侧栏作者区
                 fetch(`/api/user?user_id=${post.user_id}`)
                     .then(response => response.json())
                     .then(userData => {
-                        if (userData.status === 0) {
+                        if (userData.status === 0 && userData.user) {
                             const authorName = userData.user.username || `用户ID: ${post.user_id}`;
                             document.getElementById('author-name').innerText = authorName;
                             document.getElementById('sidebar-username').innerText = authorName;
+
+                            // 1. 动态渲染作者头像（有头像用头像，没有就用默认图）
+                            document.getElementById('authorAvatar').innerHTML =
+                                `<img src="${userData.user.avatar || '/static/avatar/sunny_avatar.jpg'}" alt="作者头像"
+                                      style="width:82px;height:82px;border-radius:50%;object-fit:cover;border:2px solid #2196f3;">`;
+
+                            // 2. 动态渲染bio，如果有bio字段
+                            document.querySelector('.author-card .bio').innerText =
+                                userData.user.bio || '欢迎来到Easy Blog！';
                         }
                     });
+
                 // 设置发布日期
                 const date = new Date(post.create_time);
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                 document.getElementById('post-date').innerText = formattedDate;
                 document.title = `${post.title} - 简易论坛`;
+
                 // 是否显示删除按钮
                 if (currentUserId && currentUserId == post.user_id) {
                     document.getElementById('deleteBtn').style.display = 'inline-flex';
