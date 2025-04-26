@@ -150,9 +150,19 @@ body {
   font-size: 15px;
   margin-top: 12px;
   box-shadow: 0 1px 6px #d7e7fd3a;
-  transition: background 0.18s;
+  transition: all 0.18s;
 }
 .follow-btn:hover { background: #156acb; }
+
+/* 新增：已关注状态样式 */
+.follow-btn.following {
+  background: #e8f4ff;
+  color: #2196f3;
+  border: 1px solid #2196f3;
+}
+.follow-btn.following:hover {
+  background: #d5e9fd;
+}
 
 .article-meta {
   color: #8b97a8;
