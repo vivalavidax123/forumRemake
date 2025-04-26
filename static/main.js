@@ -3,18 +3,21 @@
 function updateUserArea() {
     const userId = localStorage.getItem('userId');
     const username = localStorage.getItem('username');
+    const avatar = localStorage.getItem('avatar');  
     const userArea = document.getElementById('userArea');
     if (!userArea) return;
 
     if (userId && username) {
         userArea.innerHTML = `
-            <span class="user-info">Welcome, FZZHA2</span>
+            <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
+            <span class="user-info">Welcome, ${username}</span>
             <button class="post-btn" id="writeBtn">Post</button>
             <button class="logout-btn" id="logoutBtn">Logout</button>
         `;
         document.getElementById('logoutBtn').addEventListener('click', function() {
             localStorage.removeItem('userId');
             localStorage.removeItem('username');
+            localStorage.removeItem('avatar');
             window.location.reload();
         });
         document.getElementById('writeBtn').addEventListener('click', function() {
@@ -22,8 +25,8 @@ function updateUserArea() {
         });
     } else {
         userArea.innerHTML = `
-            <button id="loginBtn">登录</button>
-            <button id="registerBtn" style="margin-left: 10px;">注册</button>
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn" style="margin-left: 10px;">Regist</button>
         `;
         document.getElementById('loginBtn').addEventListener('click', function() {
             window.location.href = '/login';
