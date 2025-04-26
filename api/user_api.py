@@ -188,3 +188,87 @@ def follow_user():
     db.session.add(follow)
     db.session.commit()
     return jsonify({'status': 0, 'msg': 'Follow successful.'})
+
+# 获取用户关注的人列表
+@user_api.route('/api/following', methods=['GET'])
+def get_following():
+    follower_id = request.args.get('user_id')
+    if not follower_id:
+        return jsonify({'status': 1, 'msg': '缺少用户ID参数'})
+    
+    # 查询此用户关注的所有人
+    followings = Follow.query.filter_by(follower_id=follower_id).all()
+    
+    # 如果没有关注任何人
+    if not followings:
+        return jsonify({'status': 0, 'followings': []})
+    
+    result = []
+    for follow in followings:
+        # 获取被关注者的信息
+        followee = User.query.get(follow.followee_id)
+        if followee:
+            result.append({
+                'id': followee.id,
+                'username': followee.username,
+                'avatar': followee.avatar,
+                'post_count': Post.query.filter_by(user_id=followee.id).count()
+            })
+    
+    return jsonify({'status': 0, 'followings': result})
+
+# 取消关注
+@user_api.route('/api/unfollow', methods=['POST'])
+def unfollow_user():
+    data = request.get_json()
+    follower_id = data.get('follower_id')
+    followee_id = data.get('followee_id')
+    
+    if not follower_id or not followee_id:
+        return jsonify({'status': 1, 'msg': '缺少参数'})
+    
+    # 查找关注记录
+    follow = Follow.query.filter_by(
+        follower_id=follower_id, 
+        followee_id=followee_id
+    ).first()
+    
+    if not follow:
+        return jsonify({'status': 2, 'msg': '未关注该用户'})
+    
+    # 删除关注记录
+    db.session.delete(follow)
+    db.session.commit()
+    
+    return jsonify({'status': 0, 'msg': '取消关注成功'})
+
+
+
+# 获取关注者（Followings）的所有帖子，按时间倒序排序
+@user_api.route('/api/following/posts', methods=['GET'])
+def get_following_posts():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'status': 1, 'msg': 'Missing user ID.'})
+
+    # 获取当前用户关注的所有用户ID
+    followings = Follow.query.filter_by(follower_id=user_id).all()
+    followee_ids = [f.followee_id for f in followings]
+    if not followee_ids:
+        return jsonify({'status': 0, 'posts': []})
+
+    # 查询这些用户的所有帖子，按时间倒序
+    posts = Post.query.filter(Post.user_id.in_(followee_ids)).order_by(Post.create_time.desc()).all()
+    result = []
+    for p in posts:
+        result.append({
+            'id': p.id,
+            'title': p.title,
+            'content': p.content,
+            'user_id': p.user_id,
+            'create_time': p.create_time.isoformat() if p.create_time else None,
+            'like_count': p.like_count,
+            'comment_count': p.comment_count
+        })
+
+    return jsonify({'status': 0, 'posts': result})

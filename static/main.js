@@ -378,3 +378,33 @@ document.addEventListener('DOMContentLoaded', function () {
     bindSearchInput();
     bindHomeLink();
 });
+
+// 设置导航栏高亮当前页面
+function highlightCurrentPage() {
+    const path = window.location.pathname;
+    const links = document.querySelectorAll('.header-bottom a');
+    
+    links.forEach(link => {
+        // 移除所有 active 类
+        link.classList.remove('active');
+        
+        // 检查链接是否匹配当前路径
+        const href = link.getAttribute('href');
+        if (href === path || 
+            (href === '/' && path === '/') || 
+            (href === '/hot' && path === '/hot') ||
+            (href === '/follow' && path === '/follow')) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// 在页面初始化时添加调用
+document.addEventListener('DOMContentLoaded', function () {
+    updateUserArea();
+    loadUserProfile();
+    loadPostList();
+    bindSearchInput();
+    bindHomeLink();
+    highlightCurrentPage(); // 新增这行
+});
