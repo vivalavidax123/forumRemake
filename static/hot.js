@@ -17,7 +17,7 @@ function loadHotList() {
             if (data.status === 0) {
                 hotListDiv.innerHTML = '';
                 if (data.posts.length === 0) {
-                    hotListDiv.innerHTML = '<div class="question-card"><h3>暂无热门帖子</h3></div>';
+                    hotListDiv.innerHTML = '<div class="question-card"><h3>No hot posts yet.</h3></div>';
                     return;
                 }
                 data.posts.forEach(post => {

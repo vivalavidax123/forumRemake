@@ -44,7 +44,7 @@ function updateUserArea() {
 function renderUserProfileLoading() {
     const userProfile = document.getElementById('userProfile');
     if (userProfile) {
-        userProfile.innerHTML = `<div style="text-align:center; padding: 30px;">加载中...</div>`;
+        userProfile.innerHTML = `<div style="text-align:center; padding: 30px;">Loading...</div>`;
     }
 }
 
@@ -88,7 +88,7 @@ function renderUserProfileLogin(user) {
             if (!file) return;
             // 限制大小和类型可选
             if (!file.type.startsWith('image/')) {
-                alert('请选择图片文件！');
+                alert('Please select an image file!');
                 return;
             }
             // 上传文件到后端
@@ -110,12 +110,12 @@ function renderUserProfileLogin(user) {
                     updateUserArea();
                     // 3. 侧边栏图片直接更
                     document.getElementById('avatar').src = data.avatar || '/static/avatar.png';
-                    alert('头像更换成功！');
+                    alert('Avatar updated successfully!');
                 } else {
-                    alert(data.msg || '头像更换失败');
+                    alert(data.msg || 'Avatar update failed.');
                 }
             })
-            .catch(() => alert('网络错误，头像上传失败'));
+            .catch(() => alert('Network error, failed to upload avatar.'));
         };
     }
 }
@@ -174,7 +174,7 @@ function loadPostList() {
             if (data.status === 0) {
                 postListDiv.innerHTML = '';
                 if (data.posts.length === 0) {
-                    postListDiv.innerHTML = '<div class="question-card"><h3>暂无帖子</h3><p>快来发布第一篇帖子吧！</p></div>';
+                    postListDiv.innerHTML = '<div class="question-card"><h3>No posts yet</h3><p>Be the first to post!</p></div>';
                     return;
                 }
                 data.posts.forEach(post => {
@@ -188,7 +188,7 @@ function loadPostList() {
                     
                     // 添加删除按钮（仅对作者显示）
                     const deleteButton = isAuthor ? 
-                        `<button class="delete-post-btn" data-post-id="${post.id}">删除</button>` : '';
+                        `<button class="delete-post-btn" data-post-id="${post.id}">Delete</button>` : '';
                     
                     // 检查当前用户是否已点赞这篇帖子
                     let likeButton = '';
@@ -234,7 +234,7 @@ function loadPostList() {
                         deleteBtn.addEventListener('click', function(e) {
                             e.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
                             const postId = this.getAttribute('data-post-id');
-                            if (confirm('确定要删除这篇帖子吗？此操作不可恢复！')) {
+                            if (confirm('Are you sure?')) {
                                 deletePost(postId);
                             }
                         });
@@ -257,7 +257,7 @@ function loadPostList() {
                                     }
                                 })
                                 .catch(error => {
-                                    console.error('获取点赞状态错误:', error);
+                                    console.error('like error', error);
                                 });
                         }
                         
@@ -266,13 +266,13 @@ function loadPostList() {
                             e.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
                             
                             if (!currentUserId) {
-                                alert('请先登录再点赞！');
+                                alert('Please log in first');
                                 return;
                             }
                             
                             // 如果已经点赞过，提示用户
                             if (this.getAttribute('data-liked') === 'true') {
-                                alert('您已经点赞过这篇帖子');
+                                alert('You have already liked this post.');
                                 return;
                             }
                             
@@ -300,12 +300,12 @@ function loadPostList() {
                                     this.classList.add('liked');
                                     this.setAttribute('data-liked', 'true');
                                 } else {
-                                    alert('点赞失败: ' + (data.msg || '未知错误'));
+                                    alert('like failed');
                                 }
                             })
                             .catch(error => {
-                                console.error('点赞请求错误:', error);
-                                alert('网络错误，请稍后重试');
+                                console.error('like failed:');
+                                alert('error(internet)');
                             });
                         });
                     }
@@ -328,7 +328,7 @@ function loadPostList() {
 function deletePost(postId) {
     const currentUserId = localStorage.getItem('userId');
     if (!currentUserId) {
-        alert('请先登录！');
+        alert('Please log in');
         return;
     }
 
@@ -338,16 +338,16 @@ function deletePost(postId) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 0) {
-            alert('帖子删除成功！');
+            alert('Delete Success');
             // 重新加载帖子列表，而不是刷新整个页面
             loadPostList();
         } else {
-            alert('删除失败: ' + (data.msg || '未知错误'));
+            alert('delete failed');
         }
     })
     .catch(error => {
-        console.error('删除帖子请求错误:', error);
-        alert('网络错误，请稍后重试');
+        console.error('error');
+        alert('error(internet)');
     });
 }
 
