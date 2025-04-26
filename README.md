@@ -1,3 +1,9 @@
+log in try
+username: admin
+password: 123456
+
+
+
 Easy Blog
 Easy Blog is a simple and modern blogging platform developed for a Hackathon project. Users can register, log in, create posts, comment, like, and follow other users. The project is built using Python (Flask), SQLite, HTML, CSS, and JavaScript.
 
