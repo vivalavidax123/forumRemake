@@ -1,5 +1,5 @@
 body {
-  background: #faf8e3; /* 主站背景 */
+  background: #faf8e3; /* Main site background */
   font-family: 'HarmonyOS Sans', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   margin: 0;
   padding: 0;
@@ -28,8 +28,6 @@ body {
   background: #218838;
 }
 
-
-
 .navbar {
   position: sticky;
   width: 100%;
@@ -51,12 +49,12 @@ body {
   border-top: 1px solid #97E7E1;
   align-items: center;
   justify-content: space-between;
-  
-  /* 可以放你的导航内容，比如菜单栏等 */
+
+  /* You can put your navigation content here, such as a menu bar, etc. */
 }
 
 .header-bottom a {
-  text-decoration: none;   /* 去掉下划线 */
+  text-decoration: none;   /* Remove underline */
   color: #7AA2E3;
   padding: 8px 16px;
   border-radius: 4px;
@@ -154,7 +152,7 @@ body {
 }
 .follow-btn:hover { background: #156acb; }
 
-/* 新增：已关注状态样式 */
+/* New: Style for already-followed state */
 .follow-btn.following {
   background: #e8f4ff;
   color: #2196f3;
@@ -216,7 +214,7 @@ body {
 }
 .back-btn:hover { color: #2196f3; }
 
-/* 评论区样式复用主 feed 卡片风格 */
+/* Comment section: reuse main feed card style */
 .comment-section {
   margin-top: 42px;
   border-top: 1.5px solid #f2f2f2;

@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 提交评论
     document.getElementById('submitComment').addEventListener('click', submitComment);
-    
+
     // 关注/取消关注作者按钮 - 新增
     document.getElementById('followBtn').addEventListener('click', toggleFollow);
 });
@@ -105,15 +105,15 @@ function toggleFollow() {
         alert('Please log in to follow!');
         return;
     }
-    
+
     if (currentUserId == postAuthorId) {
         alert('You cannot follow yourself!');
         return;
     }
-    
+
     const followBtn = document.getElementById('followBtn');
     const apiEndpoint = isFollowing ? '/api/unfollow' : '/api/follow';
-    
+
     fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,7 +155,7 @@ function checkFollowStatus() {
         // 未登录、无作者ID或自己的帖子不需要检查
         return;
     }
-    
+
     fetch(`/api/following?user_id=${currentUserId}`)
         .then(response => response.json())
         .then(data => {
@@ -208,15 +208,15 @@ function loadPostDetail() {
                             const authorName = userData.user.username || `用户ID: ${post.user_id}`;
                             document.getElementById('author-name').innerText = authorName;
                             document.getElementById('sidebar-username').innerText = authorName;
-                            
+
                             // 如果有头像，更新头像
                             if (userData.user.avatar) {
                                 document.getElementById('authorAvatar').style.backgroundImage = `url('${userData.user.avatar}')`;
                             }
-                            
+
                             // 检查关注状态 - 新增
                             checkFollowStatus();
-                            
+
                             // 自己的帖子不显示关注按钮
                             if (currentUserId && currentUserId == post.user_id) {
                                 document.getElementById('followBtn').style.display = 'none';
@@ -383,7 +383,7 @@ function loadComments() {
             window.isLoadingComments = false;
             console.error('评论请求错误:', error);
             const commentListDiv = document.getElementById('commentList');
-            if (commentListDiv.children.length === 0 || 
+            if (commentListDiv.children.length === 0 ||
                 (commentListDiv.children.length === 1 && commentListDiv.children[0].id === 'noComments')) {
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'comment-item';
@@ -436,7 +436,7 @@ function submitComment() {
             };
             addNewComment(tempComment, true);
             // AI回复检测
-            const hasAIMention = commentContent.toLowerCase().includes('@deepseek') || 
+            const hasAIMention = commentContent.toLowerCase().includes('@deepseek') ||
                                  commentContent.toLowerCase().includes('@bot');
             if (hasAIMention) {
                 const aiResponseHint = document.createElement('div');
