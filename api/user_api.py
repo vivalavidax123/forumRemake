@@ -177,7 +177,22 @@ def upload_avatar():
     avatar_url = f"/static/avatars/{filename}"
     return jsonify({'status': 0, 'msg': 'Upload successful', 'avatar_url': avatar_url})
 
-
+@user_api.route('/api/user/avatar', methods=['POST'])
+def change_avatar():
+    user_id = request.form.get('user_id')
+    file = request.files.get('avatar')
+    if not user_id or not file:
+        return jsonify({'status': 1, 'msg': '参数错误'})
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'status': 2, 'msg': '用户不存在'})
+    # 保存文件（示例，生产需校验类型/大小/唯一命名等）
+    avatar_filename = f'avatar_{user_id}_{file.filename}'
+    avatar_path = os.path.join(current_app.static_folder, avatar_filename)
+    file.save(avatar_path)
+    user.avatar = f'/static/{avatar_filename}'
+    db.session.commit()
+    return jsonify({'status': 0, 'msg': '头像更新成功', 'avatar': user.avatar})
 
 @user_api.route('/api/follow', methods=['POST'])
 def follow_user():
@@ -196,3 +211,4 @@ def follow_user():
     db.session.add(follow)
     db.session.commit()
     return jsonify({'status': 0, 'msg': '关注成功'})
+
