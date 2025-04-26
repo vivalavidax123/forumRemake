@@ -109,11 +109,11 @@ def like_post(post_id):
     user_id = data.get('user_id')
     
     if not user_id:
-        return jsonify({'status': 2, 'msg': '请先登录再点赞'})
+        return jsonify({'status': 2, 'msg': 'Please log in first'})
     
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({'status': 1, 'msg': '帖子不存在'})
+        return jsonify({'status': 1, 'msg': 'Post not found'})
     
     # 检查用户是否已经点赞过这篇帖子
     existing_like = PostLike.query.filter_by(
@@ -125,7 +125,7 @@ def like_post(post_id):
         # 用户已经点赞过，返回提示
         return jsonify({
             'status': 3, 
-            'msg': '您已经点赞过这篇帖子', 
+            'msg': 'Already liked', 
             'like_count': post.like_count,
             'has_liked': True
         })
@@ -140,7 +140,7 @@ def like_post(post_id):
     
     return jsonify({
         'status': 0, 
-        'msg': '点赞成功', 
+        'msg': 'Like successful', 
         'like_count': post.like_count,
         'has_liked': True
     })
@@ -150,7 +150,7 @@ def like_post(post_id):
 def check_post_like(post_id):
     user_id = request.args.get('user_id')
     if not user_id:
-        return jsonify({'status': 1, 'msg': '请先登录', 'has_liked': False})
+        return jsonify({'status': 1, 'msg': 'Please login first', 'has_liked': False})
     
     # 查询点赞记录
     like = PostLike.query.filter_by(user_id=user_id, post_id=post_id).first()
@@ -166,21 +166,21 @@ def delete_post(post_id):
     # 获取用户ID（通过请求参数传递）
     user_id = request.args.get('user_id')
     if not user_id:
-        return jsonify({'status': 1, 'msg': '需要提供用户ID'})
+        return jsonify({'status': 1, 'msg': 'Please provide user ID'})
     
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({'status': 2, 'msg': '帖子不存在'})
+        return jsonify({'status': 2, 'msg': 'Post not found'})
     
     # 检查用户是否是帖子的作者
     if str(post.user_id) != str(user_id):
-        return jsonify({'status': 3, 'msg': '只有作者才能删除帖子'})
+        return jsonify({'status': 3, 'msg': 'You are not the author of this post'})
     
     # 删除帖子
     db.session.delete(post)
     db.session.commit()
     
-    return jsonify({'status': 0, 'msg': '帖子删除成功'})
+    return jsonify({'status': 0, 'msg': 'Post deleted successfully'})
 
 
 @post_api.route('/api/posts/top', methods=['GET'])

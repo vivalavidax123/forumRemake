@@ -234,13 +234,13 @@ def unfollow_user():
     ).first()
     
     if not follow:
-        return jsonify({'status': 2, 'msg': '未关注该用户'})
+        return jsonify({'status': 2, 'msg': 'Not following this user'})
     
     # 删除关注记录
     db.session.delete(follow)
     db.session.commit()
     
-    return jsonify({'status': 0, 'msg': '取消关注成功'})
+    return jsonify({'status': 0, 'msg': 'Unfollowed successfully'})
 
 
 

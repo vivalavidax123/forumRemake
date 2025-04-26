@@ -2,7 +2,7 @@
 let currentUserId = null;
 let currentUsername = null;
 let postAuthorId = null;
-let isFollowing = false; // 新增：跟踪是否已关注作者
+let isFollowing = false; // 新增：跟踪是否Following';作者
 
 // 登录区渲染及事件绑定
 function updateUserArea() {
@@ -52,11 +52,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // 点赞功能
     document.getElementById('likeBtn').addEventListener('click', function() {
         if (!currentUserId) {
-            alert('请先登录再点赞！');
+            alert('Please log in to like this post!');
             return;
         }
         if (this.getAttribute('data-liked') === 'true') {
-            alert('您已经点赞过这篇帖子');
+            alert('Already liked this post!');
             return;
         }
         fetch(`/api/posts/${postId}/like`, {
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 删除帖子功能
     document.getElementById('deleteBtn').addEventListener('click', function() {
-        if (confirm('确定要删除这篇帖子吗？此操作不可恢复！')) {
+        if (confirm('Sure you want to delete this post?')) {
             deletePost();
         }
     });
@@ -102,12 +102,12 @@ document.addEventListener('DOMContentLoaded', function () {
 // 新增：切换关注状态
 function toggleFollow() {
     if (!currentUserId) {
-        alert('请先登录再关注用户！');
+        alert('Please log in to follow!');
         return;
     }
     
     if (currentUserId == postAuthorId) {
-        alert('不能关注自己哦！');
+        alert('You cannot follow yourself!');
         return;
     }
     
@@ -141,15 +141,15 @@ function toggleFollow() {
 function updateFollowButtonStatus() {
     const followBtn = document.getElementById('followBtn');
     if (isFollowing) {
-        followBtn.textContent = '已关注';
+        followBtn.textContent = 'Following';
         followBtn.classList.add('following');
     } else {
-        followBtn.textContent = '关注';
+        followBtn.textContent = 'Follow';
         followBtn.classList.remove('following');
     }
 }
 
-// 新增：检查是否已关注作者
+// 新增：检查是否Following';作者
 function checkFollowStatus() {
     if (!currentUserId || !postAuthorId || currentUserId == postAuthorId) {
         // 未登录、无作者ID或自己的帖子不需要检查
@@ -227,7 +227,7 @@ function loadPostDetail() {
                 const date = new Date(post.create_time);
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                 document.getElementById('post-date').innerText = formattedDate;
-                document.title = `${post.title} - 简易论坛`;
+                document.title = `${post.title} - Easy Blog`;
                 // 是否显示删除按钮
                 if (currentUserId && currentUserId == post.user_id) {
                     document.getElementById('deleteBtn').style.display = 'inline-flex';
@@ -289,7 +289,7 @@ function addLikeEventToComment(commentElement, commentId) {
         likeSpan.parentNode.replaceChild(newLikeSpan, likeSpan);
         newLikeSpan.addEventListener('click', function() {
             if (!currentUserId) {
-                alert('请先登录再点赞！');
+                alert('Please log in to like this post!');
                 return;
             }
             if (this.getAttribute('data-liked') === 'true') {
