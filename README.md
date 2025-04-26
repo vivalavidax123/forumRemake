@@ -1,135 +1,28 @@
-ForumRemake 项目开发计划
-一个为期两天（三人协作，48小时内完成）的论坛网站开发计划。
+Easy Blog
+Easy Blog is a simple and modern blogging platform developed for a Hackathon project. Users can register, log in, create posts, comment, like, and follow other users. The project is built using Python (Flask), SQLite, HTML, CSS, and JavaScript.
 
-🗓️ 开发时间规划
-Day 1：项目启动与核心功能开发
-⏰ 9:00–10:00 项目启动与需求明确（三人）
+Features
+User registration and login
 
-明确功能范围：
+Create, edit, and delete blog posts
 
-用户注册 / 登录（账号密码）
+Comment and reply to comments
 
-帖子主界面（帖子列表）
+Like posts and comments
 
-写博客（简单想法、具体文章）
+Follow and unfollow users
 
-评论功能
+User profile management (avatar, email, password)
 
-基本搜索功能
+Search posts
 
-任务分配与时间划分
+Basic AI moderation and AI bot replies (DeepSeek integration)
 
-⏰ 10:00–12:00 系统架构设计与数据库设计（三人）
+Responsive frontend interface
 
-前端页面设计草图：
-
-登录页、主界面、博客写作页、评论页
-
-数据库结构设计：
-
-User 表：User_ID, 用户名, 密码, 帖子数量, 帖子ID列表
-
-Post 表：Post_ID, 标题, UserID, 点赞数, 评论数, 内容, 评论内容列表
-
-Comment 表：Comment_ID, 所属 Post_ID, UserID, 评论内容
-
-⏰ 13:00–18:00 开发任务分工
-
-成员 1（前端）：
-
-登录页面设计
-
-主页面帖子列表初步设计
-
-导航菜单实现（登录、主页、写博客、搜索）
-
-成员 2（后端）：
-
-Flask + SQLite 环境搭建
-
-实现注册/登录（含密码哈希存储）
-
-用户/帖子数据库操作（CRUD）
-
-成员 3（博客功能）：
-
-写博客页面（前端 UI）
-
-博客提交至后端并入库
-
-测试发帖流程
-
-⏰ 18:00–20:00 初步联调与整合（三人）
-
-API 联调，测试前后端数据流
-
-修复初步 Bug
-
-确保注册/登录/发帖流程可用
-
-Day 2：功能完善与部署上线
-⏰ 9:00–11:00 搜索与评论功能
-
-成员 1：搜索功能
-
-搜索框前端设计
-
-后端模糊搜索（标题与内容）
-
-成员 2：评论功能
-
-评论页面设计与实现
-
-评论存储与数据库联动
-
-成员 3：界面优化
-
-帖子排序（最新/最热）
-
-博客文章页面优化
-
-⏰ 11:00–12:30 点赞与统计
-
-点赞功能（成员 2）
-
-帖子数量统计（成员 1）
-
-交互体验优化（成员 3）
-
-⏰ 13:30–16:30 联调与功能测试（三人）
-
-全功能联调
-
-UI/UX 测试与调优
-
-错误处理与异常保护
-
-前后端代码整理与注释
-
-⏰ 16:30–18:00 部署准备（三人）
-
-编写部署指南与使用说明
-
-本地终测，准备上线（Heroku等平台）
-
-⏰ 18:00–20:00 最终部署与项目展示（三人）
-
-云平台部署（Heroku / AWS / 等）
-
-线上测试网站表现
-
-撰写项目演示文档
-
-💡 技术栈推荐
-前端：HTML + CSS + JavaScript（推荐使用 Bootstrap 或 Tailwind）
-
-后端：Python + Flask（轻量高效）
-
-数据库：SQLite（便于快速开发）
-
-✅ 注意事项
-每半天进行一次任务检查，确保按计划推进
-
-快速迭代，优先实现核心功能
-
-代码规范整洁，便于后续扩展
+Tech Stack
+Backend: Python 3, Flask, Flask-SQLAlchemy
+Database: SQLite
+Frontend: HTML, CSS, JavaScript
+AI: DeepSeek API
+Other tools: Postman for API testing
