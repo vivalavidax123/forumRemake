@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>关注列表 - Easy Blog</title>
+    <title>Following - Easy Blog</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
     <style>
         .following-container {
             margin-top: 20px;
         }
-        
+
         .user-card {
             background: #fff;
             border-radius: 10px;
@@ -20,12 +20,12 @@
             box-shadow: 0 1px 6px rgba(0,0,0,0.05);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        
+
         .user-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        
+
         .user-avatar {
             width: 60px;
             height: 60px;
@@ -33,25 +33,25 @@
             margin-right: 20px;
             object-fit: cover;
         }
-        
+
         .user-info {
             flex: 1;
         }
-        
+
         .user-name {
             font-size: 18px;
             font-weight: bold;
             color: #056de8;
             margin-bottom: 5px;
         }
-        
+
         .user-stats {
             display: flex;
             color: #666;
             font-size: 14px;
             gap: 15px;
         }
-        
+
         .unfollow-btn {
             background: #f0f4ff;
             color: #056de8;
@@ -62,18 +62,18 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .unfollow-btn:hover {
             background: #e0e9ff;
         }
-        
+
         .no-following {
             text-align: center;
             padding: 40px 0;
             color: #999;
             font-size: 16px;
         }
-        
+
         .loading {
             text-align: center;
             padding: 40px 0;
@@ -86,7 +86,7 @@
             margin-bottom: 20px;
             border-bottom: 1px solid #e0e9ff;
         }
-        
+
         .tab {
             padding: 10px 20px;
             cursor: pointer;
@@ -95,18 +95,18 @@
             border-bottom: 3px solid transparent;
             transition: all 0.2s;
         }
-        
+
         .tab.active {
             color: #056de8;
             border-color: #056de8;
             font-weight: bold;
         }
-        
+
         /* Content sections */
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
@@ -134,20 +134,20 @@
     <div class="main-grid">
         <main class="center">
             <h2 style="margin-bottom: 20px; color: #056de8;">Following</h2>
-            
+
             <!-- 添加标签页切换 -->
             <div class="tab-container">
                 <div class="tab active" data-tab="posts">Posts</div>
                 <div class="tab" data-tab="users">Users</div>
             </div>
-            
+
             <!-- 关注用户的帖子 -->
             <div class="tab-content active" id="posts-content">
                 <div class="feed" id="followingPosts">
                     <div class="loading">Loading posts from people you follow...</div>
                 </div>
             </div>
-            
+
             <!-- 关注的用户列表 -->
             <div class="tab-content" id="users-content">
                 <div class="following-container" id="followingList">
@@ -158,9 +158,9 @@
 
         <aside class="right">
             <div class="user-profile" id="userProfile">
-                <img src="/static/avatar.png" alt="用户头像" class="avatar" id="avatar">
+                <img src="/static/avatar.png" alt="Avatar" class="avatar" id="avatar">
                 <div class="user-info">
-                    <div class="username" id="username">未登录</div>
+                    <div class="username" id="username">Guest</div>
                     <div class="stats">
                         <span>Blog <b id="postCount">0</b></span>
                         <span>Following <b id="followCount">0</b></span>
@@ -169,7 +169,7 @@
                 <!-- 隐藏的文件上传input -->
                 <input type="file" id="avatarInput" accept="image/*" style="display:none;">
                 <!-- 更改头像按钮 -->
-                <button class="write-btn" id="changeAvatarBtn">更改头像</button>
+                <button class="write-btn" id="changeAvatarBtn">Change Avatar</button>
             </div>
         </aside>
     </div>
@@ -188,7 +188,7 @@
                     // 移除所有active类
                     tabs.forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                    
+
                     // 添加active类到当前标签和内容
                     this.classList.add('active');
                     const tabName = this.getAttribute('data-tab');
@@ -203,9 +203,9 @@
             if (!userId) {
                 document.getElementById('followingList').innerHTML = `
                     <div class="no-following">
-                        <p>请先登录查看关注列表</p>
+                        <p>Please log in to view your following list.</p>
                         <button onclick="window.location.href='/login'" style="margin-top: 10px; padding: 10px 20px; background: #056de8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            去登录
+                            Log in
                         </button>
                     </div>
                 `;
@@ -218,16 +218,16 @@
                     const followingListDiv = document.getElementById('followingList');
                     if (data.status === 0) {
                         const followings = data.followings || [];
-                        
+
                         if (followings.length === 0) {
                             followingListDiv.innerHTML = `
                                 <div class="no-following">
-                                    <p>您还没有关注任何人</p>
+                                    <p>You are not following anyone yet.</p>
                                 </div>
                             `;
                             return;
                         }
-                        
+
                         followingListDiv.innerHTML = '';
                         followings.forEach(user => {
                             const userCard = document.createElement('div');
@@ -237,25 +237,25 @@
                                 <div class="user-info">
                                     <div class="user-name">${user.username}</div>
                                     <div class="user-stats">
-                                        <span>博客: ${user.post_count || 0}</span>
+                                        <span>Posts: ${user.post_count || 0}</span>
                                     </div>
                                 </div>
                                 <button class="unfollow-btn" data-user-id="${user.id}">unfollow</button>
                             `;
                             followingListDiv.appendChild(userCard);
-                            
+
                             // 添加用户卡片点击事件 - 点击头像或用户名跳转到用户页面
                             const userAvatar = userCard.querySelector('.user-avatar');
                             const userName = userCard.querySelector('.user-name');
-                            
+
                             function goToUserPage() {
                                 // 假设有用户页面路由
                                 window.location.href = `/user/${user.id}`;
                             }
-                            
+
                             userAvatar.addEventListener('click', goToUserPage);
                             userName.addEventListener('click', goToUserPage);
-                            
+
                             // 添加取消关注事件
                             const unfollowBtn = userCard.querySelector('.unfollow-btn');
                             unfollowBtn.addEventListener('click', function(e) {
@@ -267,7 +267,7 @@
                     } else {
                         followingListDiv.innerHTML = `
                             <div class="no-following">
-                                <p>加载关注列表失败: ${data.msg || '未知错误'}</p>
+                                <p>Failed to load following list: ${data.msg || 'Unknown error'}</p>
                             </div>
                         `;
                     }
@@ -281,16 +281,16 @@
                     `;
                 });
         }
-        
+
         // 新增：加载关注用户的帖子
         function loadFollowingPosts() {
             const userId = localStorage.getItem('userId');
             if (!userId) {
                 document.getElementById('followingPosts').innerHTML = `
                     <div class="no-following">
-                        <p>请先登录查看关注的帖子</p>
+                        <p>Please log in to view posts from people you follow.</p>
                         <button onclick="window.location.href='/login'" style="margin-top: 10px; padding: 10px 20px; background: #056de8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            去登录
+                            Log in
                         </button>
                     </div>
                 `;
@@ -301,45 +301,45 @@
                 .then(response => response.json())
                 .then(data => {
                     const postsContainer = document.getElementById('followingPosts');
-                    
+
                     if (data.status === 0) {
                         const posts = data.posts || [];
-                        
+
                         if (posts.length === 0) {
                             postsContainer.innerHTML = `
                                 <div class="question-card">
-                                    <h3>暂无内容</h3>
-                                    <p>您关注的用户还没有发布任何帖子，或者您还没有关注任何人。</p>
+                                    <h3>No content</h3>
+                                    <p>No one you follow has posted yet, or you are not following anyone.</p>
                                 </div>
                             `;
                             return;
                         }
-                        
+
                         postsContainer.innerHTML = '';
-                        
+
                         // 渲染帖子列表
                         posts.forEach(post => {
                             const date = new Date(post.create_time);
                             const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-                            
+
                             // 创建帖子卡片
                             const postCard = document.createElement('div');
                             postCard.className = 'question-card';
-                            
+
                             // 获取用户信息
                             fetch(`/api/user?user_id=${post.user_id}`)
                                 .then(res => res.json())
                                 .then(userData => {
                                     const username = userData.status === 0 ? userData.user.username : `用户ID: ${post.user_id}`;
-                                    
+
                                     postCard.innerHTML = `
                                         <h3>${post.title}</h3>
                                         <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
                                         <div style="margin-top: 10px; font-size: 14px; color: #888; display: flex; align-items: center; justify-content: space-between;">
                                           <div>
-                                            <span>${username}</span> | 
-                                            <span>${formattedDate}</span> | 
-                                            <span>👍 ${post.like_count}</span> | 
+                                            <span>${username}</span> |
+                                            <span>${formattedDate}</span> |
+                                            <span>👍 ${post.like_count}</span> |
                                             <span>💬 ${post.comment_count}</span>
                                           </div>
                                         </div>
@@ -352,24 +352,24 @@
                                         <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
                                         <div style="margin-top: 10px; font-size: 14px; color: #888; display: flex; align-items: center; justify-content: space-between;">
                                           <div>
-                                            <span>用户ID: ${post.user_id}</span> | 
-                                            <span>${formattedDate}</span> | 
-                                            <span>👍 ${post.like_count}</span> | 
+                                            <span>用户ID: ${post.user_id}</span> |
+                                            <span>${formattedDate}</span> |
+                                            <span>👍 ${post.like_count}</span> |
                                             <span>💬 ${post.comment_count}</span>
                                           </div>
                                         </div>
                                     `;
                                 });
-                            
+
                             // 为整个帖子卡片添加点击事件
                             postCard.style.cursor = 'pointer';
                             postCard.addEventListener('click', function() {
                                 window.location.href = `/blog/${post.id}`;
                             });
-                            
+
                             postsContainer.appendChild(postCard);
                         });
-                        
+
                     } else {
                         postsContainer.innerHTML = `
                             <div class="question-card">
@@ -389,13 +389,13 @@
                     `;
                 });
         }
-        
+
         // 取消关注用户
         function unfollowUser(followerId, followeeId, userCard) {
-            if (!confirm('确定要取消关注此用户吗？')) {
+            if (!confirm('Are you sure you want to unfollow this user?')) {
                 return;
             }
-            
+
             fetch('/api/unfollow', {
                 method: 'POST',
                 headers: {
@@ -413,23 +413,23 @@
                     userCard.style.transition = 'all 0.3s';
                     userCard.style.opacity = '0';
                     userCard.style.transform = 'translateX(30px)';
-                    
+
                     setTimeout(() => {
                         userCard.remove();
-                        
+
                         // 如果没有关注的人了，显示提示
                         const followingListDiv = document.getElementById('followingList');
                         if (followingListDiv.children.length === 0) {
                             followingListDiv.innerHTML = `
                                 <div class="no-following">
-                                    <p>您还没有关注任何人</p>
+                                    <p>You are not following anyone yet.</p>
                                     <button onclick="window.location.href='/'" style="margin-top: 10px; padding: 10px 20px; background: #056de8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                        浏览用户
+                                        Browse Users
                                     </button>
                                 </div>
                             `;
                         }
-                        
+
                         // 更新关注计数
                         const followCountElement = document.getElementById('followCount');
                         if (followCountElement) {
@@ -438,7 +438,7 @@
                                 followCountElement.textContent = currentCount - 1;
                             }
                         }
-                        
+
                         // 取消关注后重新加载关注用户的帖子
                         loadFollowingPosts();
                     }, 300);
@@ -458,14 +458,14 @@
             if (typeof updateUserArea === 'function') {
                 updateUserArea();
             }
-            
+
             if (typeof loadUserProfile === 'function') {
                 loadUserProfile();
             }
-            
+
             // 设置标签页切换
             setupTabs();
-            
+
             // 加载关注列表和关注用户的帖子
             loadFollowingList();
             loadFollowingPosts();
