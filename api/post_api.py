@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from database import db, Post
+from database import db, Post, PostLike
 import audit
 
 post_api = Blueprint('post_api', __name__)
@@ -92,12 +92,61 @@ def get_user_posts(user_id):
 
 @post_api.route('/api/posts/<int:post_id>/like', methods=['POST'])
 def like_post(post_id):
+    # 从请求中获取用户ID
+    data = request.get_json()
+    user_id = data.get('user_id')
+    
+    if not user_id:
+        return jsonify({'status': 2, 'msg': '请先登录再点赞'})
+    
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({'status': 1, 'msg': 'Post does not exist.'})
+        return jsonify({'status': 1, 'msg': '帖子不存在'})
+    
+    # 检查用户是否已经点赞过这篇帖子
+    existing_like = PostLike.query.filter_by(
+        user_id=user_id,
+        post_id=post_id
+    ).first()
+    
+    if existing_like:
+        # 用户已经点赞过，返回提示
+        return jsonify({
+            'status': 3, 
+            'msg': '您已经点赞过这篇帖子', 
+            'like_count': post.like_count,
+            'has_liked': True
+        })
+    
+    # 用户没有点赞过，添加点赞记录
+    new_like = PostLike(user_id=user_id, post_id=post_id)
+    db.session.add(new_like)
+    
+    # 增加帖子的点赞数
     post.like_count += 1
     db.session.commit()
-    return jsonify({'status': 0, 'msg': 'Liked successfully.', 'like_count': post.like_count})
+    
+    return jsonify({
+        'status': 0, 
+        'msg': '点赞成功', 
+        'like_count': post.like_count,
+        'has_liked': True
+    })
+
+# 查询用户是否已点赞帖子
+@post_api.route('/api/posts/<int:post_id>/like/check', methods=['GET'])
+def check_post_like(post_id):
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'status': 1, 'msg': '请先登录', 'has_liked': False})
+    
+    # 查询点赞记录
+    like = PostLike.query.filter_by(user_id=user_id, post_id=post_id).first()
+    
+    return jsonify({
+        'status': 0,
+        'has_liked': like is not None
+    })
 
 # 新增：删除帖子API
 @post_api.route('/api/posts/<int:post_id>', methods=['DELETE'])

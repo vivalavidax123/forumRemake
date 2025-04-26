@@ -138,6 +138,16 @@ function loadPostList() {
                     const deleteButton = isAuthor ? 
                         `<button class="delete-post-btn" data-post-id="${post.id}">删除</button>` : '';
                     
+                    // 检查当前用户是否已点赞这篇帖子
+                    let likeButton = '';
+                    if (currentUserId) {
+                        // 添加点赞按钮
+                        likeButton = `<button class="like-post-btn" data-post-id="${post.id}">👍 ${post.like_count}</button>`;
+                    } else {
+                        // 未登录用户只显示点赞数
+                        likeButton = `<span>👍 ${post.like_count}</span>`;
+                    }
+                    
                     postCard.innerHTML = `
                         <h3>${post.title}</h3>
                         <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
@@ -145,7 +155,7 @@ function loadPostList() {
                           <div>
                             <span>User ID: ${post.user_id}</span> | 
                             <span>Post at: ${formattedDate}</span> | 
-                            <span>👍 ${post.like_count}</span> | 
+                            ${likeButton} | 
                             <span>💬 ${post.comment_count}</span>
                           </div>
                           <div>
@@ -158,7 +168,8 @@ function loadPostList() {
                     // 为整个卡片添加点击事件（跳转到详情页）
                     postCard.addEventListener('click', function(e) {
                         // 如果点击的不是删除按钮，才跳转到详情页
-                        if (!e.target.classList.contains('delete-post-btn')) {
+                        if (!e.target.classList.contains('delete-post-btn') && 
+                            !e.target.classList.contains('like-post-btn')) {
                             window.location.href = `/blog/${post.id}`;
                         }
                     });
@@ -174,6 +185,76 @@ function loadPostList() {
                             if (confirm('确定要删除这篇帖子吗？此操作不可恢复！')) {
                                 deletePost(postId);
                             }
+                        });
+                    }
+                    
+                    // 为点赞按钮添加事件（如果存在）
+                    const likeBtn = postCard.querySelector('.like-post-btn');
+                    if (likeBtn) {
+                        const postId = likeBtn.getAttribute('data-post-id');
+                        
+                        // 检查用户是否已经点赞过该帖子
+                        if (currentUserId) {
+                            fetch(`/api/posts/${postId}/like/check?user_id=${currentUserId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === 0 && data.has_liked) {
+                                        // 已点赞，改变按钮样式
+                                        likeBtn.classList.add('liked');
+                                        likeBtn.setAttribute('data-liked', 'true');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('获取点赞状态错误:', error);
+                                });
+                        }
+                        
+                        // 添加点击事件
+                        likeBtn.addEventListener('click', function(e) {
+                            e.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
+                            
+                            if (!currentUserId) {
+                                alert('请先登录再点赞！');
+                                return;
+                            }
+                            
+                            // 如果已经点赞过，提示用户
+                            if (this.getAttribute('data-liked') === 'true') {
+                                alert('您已经点赞过这篇帖子');
+                                return;
+                            }
+                            
+                            // 发送点赞请求
+                            fetch(`/api/posts/${postId}/like`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    user_id: currentUserId
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 0) {
+                                    // 点赞成功，更新点赞数
+                                    this.innerHTML = `👍 ${data.like_count}`;
+                                    // 标记为已点赞状态
+                                    this.classList.add('liked');
+                                    this.setAttribute('data-liked', 'true');
+                                } else if (data.status === 3) {
+                                    // 已点赞过
+                                    alert(data.msg);
+                                    this.classList.add('liked');
+                                    this.setAttribute('data-liked', 'true');
+                                } else {
+                                    alert('点赞失败: ' + (data.msg || '未知错误'));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('点赞请求错误:', error);
+                                alert('网络错误，请稍后重试');
+                            });
                         });
                     }
                 });

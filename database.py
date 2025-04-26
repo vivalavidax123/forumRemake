@@ -64,6 +64,28 @@ class Comment(db.Model):
     status = db.Column(db.Integer, default=0)  # 审核
 
 
+# 新增：记录用户点赞的表（使用复合主键）
+class PostLike(db.Model):
+    # 复合主键：用户ID + 帖子ID
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), primary_key=True)
+    create_time = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(ZoneInfo("Australia/Melbourne"))
+    )
+
+
+# 新增：记录用户评论点赞的表
+class CommentLike(db.Model):
+    # 复合主键：用户ID + 评论ID
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'), primary_key=True)
+    create_time = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(ZoneInfo("Australia/Melbourne"))
+    )
+
+
 def print_all_users():
     users = User.query.all()
     print("所有用户：")

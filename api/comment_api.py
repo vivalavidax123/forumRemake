@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from database import db, Comment, Post
+from database import db, Comment, Post, CommentLike
 from datetime import datetime, timezone
 from ai_utils import ai_comment, get_deepseek
 from zoneinfo import ZoneInfo
@@ -90,9 +90,58 @@ def get_comments():
 # Like a comment
 @comment_api.route('/api/comments/<int:comment_id>/like', methods=['POST'])
 def like_comment(comment_id):
+    # 从请求中获取用户ID
+    data = request.get_json()
+    user_id = data.get('user_id')
+    
+    if not user_id:
+        return jsonify({'status': 2, 'msg': '请先登录再点赞'})
+    
     comment = Comment.query.get(comment_id)
     if not comment:
-        return jsonify({'status': 1, 'msg': 'Comment does not exist.'})
+        return jsonify({'status': 1, 'msg': '评论不存在'})
+    
+    # 检查用户是否已经点赞过这条评论
+    existing_like = CommentLike.query.filter_by(
+        user_id=user_id,
+        comment_id=comment_id
+    ).first()
+    
+    if existing_like:
+        # 用户已经点赞过，返回提示
+        return jsonify({
+            'status': 3, 
+            'msg': '您已经点赞过这条评论', 
+            'like_count': comment.like_count,
+            'has_liked': True
+        })
+    
+    # 用户没有点赞过，添加点赞记录
+    new_like = CommentLike(user_id=user_id, comment_id=comment_id)
+    db.session.add(new_like)
+    
+    # 增加评论的点赞数
     comment.like_count += 1
     db.session.commit()
-    return jsonify({'status': 0, 'msg': 'Liked successfully.', 'like_count': comment.like_count})
+    
+    return jsonify({
+        'status': 0, 
+        'msg': '点赞成功', 
+        'like_count': comment.like_count,
+        'has_liked': True
+    })
+
+# 查询用户是否已点赞评论
+@comment_api.route('/api/comments/<int:comment_id>/like/check', methods=['GET'])
+def check_comment_like(comment_id):
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'status': 1, 'msg': '请先登录', 'has_liked': False})
+    
+    # 查询点赞记录
+    like = CommentLike.query.filter_by(user_id=user_id, comment_id=comment_id).first()
+    
+    return jsonify({
+        'status': 0,
+        'has_liked': like is not None
+    })
