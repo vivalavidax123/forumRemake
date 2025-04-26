@@ -2,7 +2,7 @@
 let currentUserId = null;
 let currentUsername = null;
 let postAuthorId = null;
-
+let isFollowing = false; // 新增：跟踪是否已关注作者
 
 // 登录区渲染及事件绑定
 function updateUserArea() {
@@ -14,7 +14,7 @@ function updateUserArea() {
 
     if (currentUserId && currentUsername) {
         userArea.innerHTML = `
-            <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
+            <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
             <button class="logout-btn" id="logoutBtn">退出</button>
         `;
         document.getElementById('logoutBtn').onclick = function() {
@@ -94,7 +94,81 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 提交评论
     document.getElementById('submitComment').addEventListener('click', submitComment);
+    
+    // 关注/取消关注作者按钮 - 新增
+    document.getElementById('followBtn').addEventListener('click', toggleFollow);
 });
+
+// 新增：切换关注状态
+function toggleFollow() {
+    if (!currentUserId) {
+        alert('请先登录再关注用户！');
+        return;
+    }
+    
+    if (currentUserId == postAuthorId) {
+        alert('不能关注自己哦！');
+        return;
+    }
+    
+    const followBtn = document.getElementById('followBtn');
+    const apiEndpoint = isFollowing ? '/api/unfollow' : '/api/follow';
+    
+    fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            follower_id: currentUserId,
+            followee_id: postAuthorId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 0) {
+            isFollowing = !isFollowing;
+            updateFollowButtonStatus();
+        } else {
+            alert((isFollowing ? '取消关注' : '关注') + '失败: ' + (data.msg || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('关注请求错误:', error);
+        alert('网络错误，请稍后重试');
+    });
+}
+
+// 新增：更新关注按钮状态
+function updateFollowButtonStatus() {
+    const followBtn = document.getElementById('followBtn');
+    if (isFollowing) {
+        followBtn.textContent = '已关注';
+        followBtn.classList.add('following');
+    } else {
+        followBtn.textContent = '关注';
+        followBtn.classList.remove('following');
+    }
+}
+
+// 新增：检查是否已关注作者
+function checkFollowStatus() {
+    if (!currentUserId || !postAuthorId || currentUserId == postAuthorId) {
+        // 未登录、无作者ID或自己的帖子不需要检查
+        return;
+    }
+    
+    fetch(`/api/following?user_id=${currentUserId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 0 && data.followings) {
+                // 检查当前作者是否在关注列表中
+                isFollowing = data.followings.some(user => user.id == postAuthorId);
+                updateFollowButtonStatus();
+            }
+        })
+        .catch(error => {
+            console.error('获取关注状态错误:', error);
+        });
+}
 
 // 检查帖子点赞状态
 function checkPostLikeStatus() {
@@ -126,33 +200,34 @@ function loadPostDetail() {
                 document.getElementById('post-title').innerText = post.title;
                 document.getElementById('post-content').innerText = post.content;
                 document.getElementById('likeCount').innerText = post.like_count;
-
-                // 获取作者信息，并动态渲染侧栏作者区
+                // 获取作者信息
                 fetch(`/api/user?user_id=${post.user_id}`)
                     .then(response => response.json())
                     .then(userData => {
-                        if (userData.status === 0 && userData.user) {
+                        if (userData.status === 0) {
                             const authorName = userData.user.username || `用户ID: ${post.user_id}`;
                             document.getElementById('author-name').innerText = authorName;
                             document.getElementById('sidebar-username').innerText = authorName;
-
-                            // 1. 动态渲染作者头像（有头像用头像，没有就用默认图）
-                            document.getElementById('authorAvatar').innerHTML =
-                                `<img src="${userData.user.avatar || '/static/avatar/sunny_avatar.jpg'}" alt="作者头像"
-                                      style="width:82px;height:82px;border-radius:50%;object-fit:cover;border:2px solid #2196f3;">`;
-
-                            // 2. 动态渲染bio，如果有bio字段
-                            document.querySelector('.author-card .bio').innerText =
-                                userData.user.bio || '欢迎来到Easy Blog！';
+                            
+                            // 如果有头像，更新头像
+                            if (userData.user.avatar) {
+                                document.getElementById('authorAvatar').style.backgroundImage = `url('${userData.user.avatar}')`;
+                            }
+                            
+                            // 检查关注状态 - 新增
+                            checkFollowStatus();
+                            
+                            // 自己的帖子不显示关注按钮
+                            if (currentUserId && currentUserId == post.user_id) {
+                                document.getElementById('followBtn').style.display = 'none';
+                            }
                         }
                     });
-
                 // 设置发布日期
                 const date = new Date(post.create_time);
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                 document.getElementById('post-date').innerText = formattedDate;
                 document.title = `${post.title} - 简易论坛`;
-
                 // 是否显示删除按钮
                 if (currentUserId && currentUserId == post.user_id) {
                     document.getElementById('deleteBtn').style.display = 'inline-flex';
