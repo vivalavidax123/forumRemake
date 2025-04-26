@@ -1,30 +1,39 @@
 // ========== 1. 顶部用户区 ==========
 
 function updateUserArea() {
-    currentUserId = localStorage.getItem('userId');
-    currentUsername = localStorage.getItem('username');
-    const avatar = localStorage.getItem('avatar');
+    const userId = localStorage.getItem('userId');
+    const username = localStorage.getItem('username');
+    const avatar = localStorage.getItem('avatar');  // 读取最新头像
     const userArea = document.getElementById('userArea');
     if (!userArea) return;
 
-    if (currentUserId && currentUsername) {
+    if (userId && username) {
         userArea.innerHTML = `
             <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
-            <button class="logout-btn" id="logoutBtn">退出</button>
+            <span class="user-info">${username}</span>
+            <button class="post-btn" id="writeBtn">Post</button>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
         `;
-        document.getElementById('logoutBtn').onclick = function() {
+        document.getElementById('logoutBtn').addEventListener('click', function() {
             localStorage.removeItem('userId');
             localStorage.removeItem('username');
             localStorage.removeItem('avatar');
             window.location.reload();
-        };
+        });
+        document.getElementById('writeBtn').addEventListener('click', function() {
+            window.location.href = '/write';
+        });
     } else {
         userArea.innerHTML = `
-            <button id="loginBtn">登录</button>
-            <button id="registerBtn" style="margin-left: 10px;">注册</button>
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn" style="margin-left: 10px;">Register</button>
         `;
-        document.getElementById('loginBtn').onclick = () => window.location.href = '/login';
-        document.getElementById('registerBtn').onclick = () => window.location.href = '/register';
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            window.location.href = '/login';
+        });
+        document.getElementById('registerBtn').addEventListener('click', function() {
+            window.location.href = '/register';
+        });
     }
 }
 
@@ -68,7 +77,7 @@ function renderUserProfileLogin(user) {
                 </div>
             </div>
             <input type="file" id="avatarInput" accept="image/*" style="display:none;">
-            <button class="write-btn" id="changeAvatarBtn">更改头像</button>
+            <button class="write-btn" id="changeAvatarBtn">Change Avatar</button>
         `;
         // 绑定事件
         document.getElementById('changeAvatarBtn').onclick = function() {
@@ -377,34 +386,4 @@ document.addEventListener('DOMContentLoaded', function () {
     loadPostList();
     bindSearchInput();
     bindHomeLink();
-});
-
-// 设置导航栏高亮当前页面
-function highlightCurrentPage() {
-    const path = window.location.pathname;
-    const links = document.querySelectorAll('.header-bottom a');
-    
-    links.forEach(link => {
-        // 移除所有 active 类
-        link.classList.remove('active');
-        
-        // 检查链接是否匹配当前路径
-        const href = link.getAttribute('href');
-        if (href === path || 
-            (href === '/' && path === '/') || 
-            (href === '/hot' && path === '/hot') ||
-            (href === '/follow' && path === '/follow')) {
-            link.classList.add('active');
-        }
-    });
-}
-
-// 在页面初始化时添加调用
-document.addEventListener('DOMContentLoaded', function () {
-    updateUserArea();
-    loadUserProfile();
-    loadPostList();
-    bindSearchInput();
-    bindHomeLink();
-    highlightCurrentPage(); // 新增这行
 });
