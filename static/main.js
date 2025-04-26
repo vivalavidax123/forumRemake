@@ -10,7 +10,7 @@ function updateUserArea() {
     if (userId && username) {
         userArea.innerHTML = `
             <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
-            <span class="user-info">Welcome, ${username}</span>
+            <span class="user-info">${username}</span>
             <button class="post-btn" id="writeBtn">Post</button>
             <button class="logout-btn" id="logoutBtn">Logout</button>
         `;
@@ -160,8 +160,8 @@ function loadPostList() {
                         <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
                         <div style="margin-top: 10px; font-size: 14px; color: #888; display: flex; align-items: center; justify-content: space-between;">
                           <div>
-                            <span>User ID: ${post.user_id}</span> | 
-                            <span>Post at: ${formattedDate}</span> | 
+                            <span>User ${post.user_id}</span> | 
+                            <span>at ${formattedDate}</span> | 
                             ${likeButton} | 
                             <span>💬 ${post.comment_count}</span>
                           </div>
