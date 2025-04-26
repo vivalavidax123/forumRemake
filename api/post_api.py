@@ -169,3 +169,25 @@ def delete_post(post_id):
     db.session.commit()
     
     return jsonify({'status': 0, 'msg': '帖子删除成功'})
+
+
+@post_api.route('/api/posts/top', methods=['GET'])
+def get_top_posts():
+    posts = Post.query.filter_by(is_top=True).order_by(Post.create_time.desc()).all()
+    result = []
+    for p in posts:
+        result.append({
+            'id': p.id,
+            'title': p.title,
+            'content': p.content,
+            'user_id': p.user_id,
+            'create_time': p.create_time.isoformat() if p.create_time else None,
+            'like_count': p.like_count,
+            'comment_count': p.comment_count,
+            'is_top': p.is_top,
+            'is_essence': p.is_essence,
+            'tag': p.tag,
+            'view_count': p.view_count,
+            'status': p.status
+        })
+    return jsonify({'status': 0, 'posts': result})
