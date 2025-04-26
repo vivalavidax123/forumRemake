@@ -89,8 +89,8 @@ function loadUserProfile() {
     fetch(`/api/profile?user_id=${encodeURIComponent(userId)}`)
         .then(res => res.json())
         .then(data => {
-            if (data.status === 0 && data.user) {
-                renderUserProfileLogin(data.user);
+            if (data.status === 0 && data.data) {
+                renderUserProfileLogin(data.data);
             } else {
                 renderUserProfileNotLogin();
             }
@@ -111,6 +111,9 @@ function loadPostList() {
         apiUrl += `?key=${encodeURIComponent(searchKey)}`;
         if (searchInput) searchInput.value = searchKey;
     }
+
+    const currentUserId = localStorage.getItem('userId');
+
     fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
@@ -127,21 +130,52 @@ function loadPostList() {
                     const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                     const postCard = document.createElement('div');
                     postCard.className = 'question-card';
+
+                    // 检查当前用户是否是帖子作者
+                    const isAuthor = currentUserId && post.user_id.toString() === currentUserId.toString();
+                    
+                    // 添加删除按钮（仅对作者显示）
+                    const deleteButton = isAuthor ? 
+                        `<button class="delete-post-btn" data-post-id="${post.id}">删除</button>` : '';
+                    
                     postCard.innerHTML = `
                         <h3>${post.title}</h3>
                         <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
-                        <div style="margin-top: 10px; font-size: 14px; color: #888;">
-                          <span>User ID: ${post.user_id}</span> | 
-                          <span>Post at: ${formattedDate}</span> | 
-                          <span>👍 ${post.like_count}</span> | 
-                          <span>💬 ${post.comment_count}</span>
+                        <div style="margin-top: 10px; font-size: 14px; color: #888; display: flex; align-items: center; justify-content: space-between;">
+                          <div>
+                            <span>User ID: ${post.user_id}</span> | 
+                            <span>Post at: ${formattedDate}</span> | 
+                            <span>👍 ${post.like_count}</span> | 
+                            <span>💬 ${post.comment_count}</span>
+                          </div>
+                          <div>
+                            ${deleteButton}
+                          </div>
                         </div>
                     `;
                     postCard.style.cursor = 'pointer';
-                    postCard.addEventListener('click', function() {
-                        window.location.href = `/blog/${post.id}`;
+                    
+                    // 为整个卡片添加点击事件（跳转到详情页）
+                    postCard.addEventListener('click', function(e) {
+                        // 如果点击的不是删除按钮，才跳转到详情页
+                        if (!e.target.classList.contains('delete-post-btn')) {
+                            window.location.href = `/blog/${post.id}`;
+                        }
                     });
+                    
                     postListDiv.appendChild(postCard);
+                    
+                    // 为删除按钮添加事件（如果存在）
+                    const deleteBtn = postCard.querySelector('.delete-post-btn');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', function(e) {
+                            e.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
+                            const postId = this.getAttribute('data-post-id');
+                            if (confirm('确定要删除这篇帖子吗？此操作不可恢复！')) {
+                                deletePost(postId);
+                            }
+                        });
+                    }
                 });
             } else {
                 postListDiv.innerHTML = '<div class="question-card"><h3>Loading Failed</h3><p>' + (data.msg || 'Try again') + '</p></div>';
@@ -155,6 +189,33 @@ function loadPostList() {
                     '<div class="question-card"><h3>Loading Failed</h3><p>Please Check internet connect </p></div>';
             }
         });
+}
+
+// 新增：删除帖子函数
+function deletePost(postId) {
+    const currentUserId = localStorage.getItem('userId');
+    if (!currentUserId) {
+        alert('请先登录！');
+        return;
+    }
+
+    fetch(`/api/posts/${postId}?user_id=${currentUserId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 0) {
+            alert('帖子删除成功！');
+            // 重新加载帖子列表，而不是刷新整个页面
+            loadPostList();
+        } else {
+            alert('删除失败: ' + (data.msg || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('删除帖子请求错误:', error);
+        alert('网络错误，请稍后重试');
+    });
 }
 
 // ========== 4. 搜索功能 ==========

@@ -98,3 +98,25 @@ def like_post(post_id):
     post.like_count += 1
     db.session.commit()
     return jsonify({'status': 0, 'msg': 'Liked successfully.', 'like_count': post.like_count})
+
+# 新增：删除帖子API
+@post_api.route('/api/posts/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    # 获取用户ID（通过请求参数传递）
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'status': 1, 'msg': '需要提供用户ID'})
+    
+    post = Post.query.get(post_id)
+    if not post:
+        return jsonify({'status': 2, 'msg': '帖子不存在'})
+    
+    # 检查用户是否是帖子的作者
+    if str(post.user_id) != str(user_id):
+        return jsonify({'status': 3, 'msg': '只有作者才能删除帖子'})
+    
+    # 删除帖子
+    db.session.delete(post)
+    db.session.commit()
+    
+    return jsonify({'status': 0, 'msg': '帖子删除成功'})

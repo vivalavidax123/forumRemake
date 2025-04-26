@@ -136,6 +136,25 @@
         .new-comment {
             animation: fadeIn 0.5s ease-out;
         }
+
+        /* 新增：删除按钮样式 */
+        .delete-btn {
+            display: inline-flex;
+            align-items: center;
+            background: #ffecec;
+            color: #ff4d4f;
+            border: 1px solid #ffd6d6;
+            border-radius: 20px;
+            padding: 8px 20px;
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #ffd6d6;
+        }
     </style>
 </head>
 
@@ -164,6 +183,8 @@
                     👍 <span id="likeCount">0</span>
                 </button>
                 <a href="/" class="back-btn">← 返回首页</a>
+                <!-- 新增：删除按钮，默认隐藏 -->
+                <button class="delete-btn" id="deleteBtn" style="display: none;">删除帖子</button>
             </div>
 
             <div class="comment-section">
@@ -196,6 +217,7 @@
         const postId = "{{ post_id }}";
         let currentUserId = null;
         let currentUsername = null;
+        let postAuthorId = null; // 新增：帖子作者ID
         
         // 页面加载完成后获取帖子详情
         window.onload = function() {
@@ -270,6 +292,13 @@
                     });
             });
 
+            // 新增：删除帖子功能
+            document.getElementById('deleteBtn').addEventListener('click', function() {
+                if (confirm('确定要删除这篇帖子吗？此操作不可恢复！')) {
+                    deletePost();
+                }
+            });
+
             // 提交评论
             document.getElementById('submitComment').addEventListener('click', submitComment);
         };
@@ -281,6 +310,7 @@
                 .then(data => {
                     if (data.status === 0) {
                         const post = data.post;
+                        postAuthorId = post.user_id; // 保存帖子作者ID
 
                         // 设置标题和内容
                         document.getElementById('post-title').innerText = post.title;
@@ -310,6 +340,11 @@
 
                         // 设置页面标题
                         document.title = `${post.title} - 简易论坛`;
+                        
+                        // 新增：检查当前用户是否是帖子作者，决定是否显示删除按钮
+                        if (currentUserId && currentUserId == post.user_id) {
+                            document.getElementById('deleteBtn').style.display = 'inline-flex';
+                        }
                     } else {
                         alert('加载帖子失败: ' + (data.msg || '未知错误'));
                         window.location.href = '/';
@@ -319,6 +354,31 @@
                     console.error('加载帖子详情错误:', error);
                     document.getElementById('post-content').innerText = '加载失败，请刷新页面重试';
                 });
+        }
+
+        // 新增：删除帖子函数
+        function deletePost() {
+            if (!currentUserId) {
+                alert('请先登录！');
+                return;
+            }
+
+            fetch(`/api/posts/${postId}?user_id=${currentUserId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 0) {
+                    alert('帖子删除成功！');
+                    window.location.href = '/'; // 删除成功后跳转到首页
+                } else {
+                    alert('删除失败: ' + (data.msg || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('删除帖子请求错误:', error);
+                alert('网络错误，请稍后重试');
+            });
         }
 
         // 加载评论列表

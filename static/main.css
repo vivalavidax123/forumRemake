@@ -293,3 +293,19 @@ body {
 .logout-btn:hover {
   background: #e0e0e0;
 }
+
+/* 新增：删除帖子按钮样式 */
+.delete-post-btn {
+  background: #ffecec;
+  color: #ff4d4f;
+  border: 1px solid #ffd6d6;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-post-btn:hover {
+  background: #ffd6d6;
+}
