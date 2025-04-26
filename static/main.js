@@ -8,7 +8,7 @@ function updateUserArea() {
 
     if (userId && username) {
         userArea.innerHTML = `
-            <span class="user-info">Welcome, FZZHA2</span>
+            <span class="user-info">Welcome, ${username}</span>
             <button class="post-btn" id="writeBtn">Post</button>
             <button class="logout-btn" id="logoutBtn">Logout</button>
         `;
@@ -22,8 +22,8 @@ function updateUserArea() {
         });
     } else {
         userArea.innerHTML = `
-            <button id="loginBtn">登录</button>
-            <button id="registerBtn" style="margin-left: 10px;">注册</button>
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn" style="margin-left: 10px;">Register</button>
         `;
         document.getElementById('loginBtn').addEventListener('click', function() {
             window.location.href = '/login';
@@ -33,6 +33,7 @@ function updateUserArea() {
         });
     }
 }
+
 
 // ========== 2. 右侧栏：用户卡片渲染 ==========
 
