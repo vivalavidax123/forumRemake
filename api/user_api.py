@@ -1,5 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from database import db, User
+import os
+import uuid
+
 
 user_api = Blueprint('user_api', __name__)
 
@@ -148,3 +151,28 @@ def get_profile():
         'follow_count': getattr(user, 'follow_count', 0)
     }
     return jsonify({'status': 0, 'msg': 'User profile retrieved successfully.', 'data': result})
+
+
+@user_api.route('/api/user/upload_avatar', methods=['POST'])
+def upload_avatar():
+    if 'avatar' not in request.files:
+        return jsonify({'status': 1, 'msg': 'No file part'})
+    file = request.files['avatar']
+    if file.filename == '':
+        return jsonify({'status': 2, 'msg': 'No selected file'})
+
+    # 校验文件扩展名（仅允许图片）
+    allowed_exts = {'png', 'jpg', 'jpeg', 'gif'}
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    if ext not in allowed_exts:
+        return jsonify({'status': 3, 'msg': 'Invalid file type'})
+
+    # 生成唯一文件名
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    avatar_folder = os.path.join(current_app.root_path, 'static', 'avatars')
+    os.makedirs(avatar_folder, exist_ok=True)
+    save_path = os.path.join(avatar_folder, filename)
+    file.save(save_path)
+
+    avatar_url = f"/static/avatars/{filename}"
+    return jsonify({'status': 0, 'msg': 'Upload successful', 'avatar_url': avatar_url})
