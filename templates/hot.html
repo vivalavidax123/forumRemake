@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Hot Blog - Easy Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="header-top">
+            <div class="logo" id="homeLink">Easy Blog</div>
+            <input class="search" type="text" id="searchInput" placeholder="搜索你感兴趣的内容">
+            <div class="user" id="userArea"></div>
+        </div>
+        <div class="header-bottom">
+            <a href="/">Home</a>
+            <a href="/hot" class="active">Hot</a>
+            <a href="/follow">Following</a>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <main class="center">
+            <div class="feed" id="hotList">
+                <div class="question-card">
+                    <h3>Hot is coming...</h3>
+                </div>
+            </div>
+        </main>
+        <aside class="right">
+            <div class="user-profile" id="userProfile">
+                <!-- 右侧栏与首页一致，用户卡片/推荐/关注等都可以直接复用 -->
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        &copy; Hackton 2025 Easy Blog
+    </footer>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="{{ url_for('static', filename='hot.js') }}"></script>
+</body>
+</html>
