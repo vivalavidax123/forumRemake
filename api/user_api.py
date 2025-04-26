@@ -110,10 +110,12 @@ def update_user():
     avatar = data.get('avatar')
     password = data.get('password')
 
-    if username:
-        if User.query.filter_by(username=username).first() and user.username != username:
+    if username and username != user.username:
+        # 只在用户真的打算修改用户名时才查重
+        if User.query.filter_by(username=username).first():
             return jsonify({'status': 3, 'msg': 'Username already exists.'})
         user.username = username
+
     if email:
         user.email = email
     if avatar:
