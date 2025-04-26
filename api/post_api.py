@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from database import db, Post, PostLike
+from sqlalchemy import or_
 import audit
 
 post_api = Blueprint('post_api', __name__)
@@ -11,6 +12,10 @@ def create_post():
     user_id = data.get('user_id')
     title = data.get('title')
     content = data.get('content')
+    is_top = data.get('is_top', False)
+    is_essence = data.get('is_essence', False)
+    tag = data.get('tag')
+    status = data.get('status', 0)
     if not (user_id and title and content):
         return jsonify({'status': 1, 'msg': 'Missing parameters.'})
 
@@ -22,12 +27,19 @@ def create_post():
         return jsonify({'status': 2, 'msg': f'Post failed, reason: {msg}'})
     '''
 
-    post = Post(user_id=user_id, title=title, content=content)
+    post = Post(
+        user_id=user_id,
+        title=title,
+        content=content,
+        is_top=is_top,
+        is_essence=is_essence,
+        tag=tag,
+        status=status
+    )
     db.session.add(post)
     db.session.commit()
     return jsonify({'status': 0, 'msg': 'Post created successfully.', 'post_id': post.id})
 
-from sqlalchemy import or_
 
 
 @post_api.route('/api/posts', methods=['GET'])
