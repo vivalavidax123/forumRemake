@@ -85,6 +85,17 @@ class CommentLike(db.Model):
         default=lambda: datetime.now(ZoneInfo("Australia/Melbourne"))
     )
 
+class Follow(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 谁关注的
+    followee_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 关注谁
+    create_time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # 可以加唯一约束防止重复关注
+    __table_args__ = (db.UniqueConstraint('follower_id', 'followee_id'),)
+
+
+
+
 
 def print_all_users():
     users = User.query.all()
