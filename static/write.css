@@ -1,0 +1,110 @@
+body {
+    background: #F8F6E3;
+    min-height: 100vh;
+    margin: 0;
+    font-family: "PingFang SC", "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.navbar {
+    background: #6AD4DD;
+    box-shadow: 0 2px 8px #6AD4DD;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.logo {
+    font-weight: bold;
+    color: #056de8;
+    font-size: 1.6rem;
+    margin-right: 30px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.blog-write-container {
+    margin-top: 40px;
+    margin-bottom: 30px;
+    background: #fff;
+    padding: 38px 32px 30px 32px;
+    border-radius: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    max-width: 700px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 380px;
+}
+
+.blog-write-container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #056de8;
+    font-size: 1.7rem;
+    letter-spacing: 1px;
+}
+
+.blog-write-container input[type="text"] {
+    padding: 13px;
+    margin-bottom: 20px;
+    border: 1px solid #e3e4e7;
+    border-radius: 22px;
+    font-size: 16px;
+    background: #f6f7fa;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: border 0.18s;
+}
+
+.blog-write-container input[type="text"]:focus {
+    border: 1.2px solid #6AD4DD;
+}
+
+.EasyMDEContainer {
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+.blog-write-container button.submit-btn {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    font-size: 16px;
+    padding: 10px 0;
+    width: 100%;
+    margin-top: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+    box-shadow: none;
+}
+.blog-write-container button.submit-btn:hover {
+    background: #218838;
+}
+
+.msg {
+    color: #27a744;
+    text-align: center;
+    margin-top: 18px;
+    font-size: 16px;
+}
+
+.error-msg {
+    color: #ff4d4f;
+    text-align: center;
+    margin-top: 18px;
+    font-size: 16px;
+    display: none;
+}
