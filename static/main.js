@@ -9,8 +9,12 @@ function updateUserArea() {
 
     if (userId && username) {
         userArea.innerHTML = `
-            <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
-            <span class="user-info">${username}</span>
+            <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}"
+                 alt="avatar"
+                 class="user-avatar"
+                 id="headerUserAvatar"
+                 style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;cursor:pointer;">
+            <span class="user-info" id="headerUsername" style="cursor:pointer;">${username}</span>
             <button class="post-btn" id="writeBtn">Post</button>
             <button class="logout-btn" id="logoutBtn">Logout</button>
         `;
@@ -22,6 +26,13 @@ function updateUserArea() {
         });
         document.getElementById('writeBtn').addEventListener('click', function() {
             window.location.href = '/write';
+        });
+        // 新增：点击顶部头像/用户名跳转到个人主页
+        document.getElementById('headerUserAvatar').addEventListener('click', function() {
+            window.location.href = `/user/${userId}`;
+        });
+        document.getElementById('headerUsername').addEventListener('click', function() {
+            window.location.href = `/user/${userId}`;
         });
     } else {
         userArea.innerHTML = `
@@ -36,7 +47,6 @@ function updateUserArea() {
         });
     }
 }
-
 
 
 // ========== 2. 右侧栏：用户卡片渲染 ==========
@@ -68,9 +78,10 @@ function renderUserProfileLogin(user) {
     const userProfile = document.getElementById('userProfile');
     if (userProfile) {
         userProfile.innerHTML = `
-            <img src="${user.avatar || '/static/avatar.png'}" alt="用户头像" class="avatar" id="avatar">
+            <img src="${user.avatar || '/static/avatar.png'}" alt="用户头像"
+                 class="avatar" id="sidebarAvatar" style="cursor:pointer;">
             <div class="user-info">
-                <div class="username" id="username">${user.username}</div>
+                <div class="username" id="sidebarUsername" style="cursor:pointer;">${user.username}</div>
                 <div class="stats">
                   <span>Blog <b id="postCount">${user.post_count || 0}</b></span>
                   <span>Following <b id="followCount">${user.follow_count || 0}</b></span>
@@ -117,6 +128,13 @@ function renderUserProfileLogin(user) {
             })
             .catch(() => alert('网络错误，头像上传失败'));
         };
+        // 新增：点击右侧头像/用户名跳转到个人主页
+        document.getElementById('sidebarAvatar').onclick = function() {
+            window.location.href = `/user/${user.id}`;
+        };
+        document.getElementById('sidebarUsername').onclick = function() {
+            window.location.href = `/user/${user.id}`;
+        };
     }
 }
 
@@ -144,10 +162,8 @@ function loadUserProfile() {
     .catch(() => {
         renderUserProfileNotLogin();
     });
-
 }
 
-// 页面加载后自动调用
 document.addEventListener('DOMContentLoaded', function () {
     loadUserProfile();
 });
@@ -200,12 +216,13 @@ function loadPostList() {
                         likeButton = `<span>👍 ${post.like_count}</span>`;
                     }
                     
+                    // 用户名可点击
                     postCard.innerHTML = `
                         <h3>${post.title}</h3>
                         <p>${post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content}</p>
                         <div style="margin-top: 10px; font-size: 14px; color: #888; display: flex; align-items: center; justify-content: space-between;">
                           <div>
-                            <span>User ${post.user_id}</span> | 
+                            <a href="/user/${post.user_id}" class="user-link" style="color:#056de8;">User ${post.user_id}</a> | 
                             <span>at ${formattedDate}</span> | 
                             ${likeButton} | 
                             <span>💬 ${post.comment_count}</span>
@@ -219,9 +236,12 @@ function loadPostList() {
                     
                     // 为整个卡片添加点击事件（跳转到详情页）
                     postCard.addEventListener('click', function(e) {
-                        // 如果点击的不是删除按钮，才跳转到详情页
-                        if (!e.target.classList.contains('delete-post-btn') && 
-                            !e.target.classList.contains('like-post-btn')) {
+                        // 如果点击的不是删除按钮、点赞按钮、用户名，则跳转详情页
+                        if (
+                            !e.target.classList.contains('delete-post-btn') &&
+                            !e.target.classList.contains('like-post-btn') &&
+                            !e.target.classList.contains('user-link')
+                        ) {
                             window.location.href = `/blog/${post.id}`;
                         }
                     });
@@ -244,7 +264,6 @@ function loadPostList() {
                     const likeBtn = postCard.querySelector('.like-post-btn');
                     if (likeBtn) {
                         const postId = likeBtn.getAttribute('data-post-id');
-                        
                         // 检查用户是否已经点赞过该帖子
                         if (currentUserId) {
                             fetch(`/api/posts/${postId}/like/check?user_id=${currentUserId}`)
@@ -260,23 +279,17 @@ function loadPostList() {
                                     console.error('获取点赞状态错误:', error);
                                 });
                         }
-                        
                         // 添加点击事件
                         likeBtn.addEventListener('click', function(e) {
                             e.stopPropagation(); // 阻止事件冒泡，防止触发卡片的点击事件
-                            
                             if (!currentUserId) {
                                 alert('请先登录再点赞！');
                                 return;
                             }
-                            
-                            // 如果已经点赞过，提示用户
                             if (this.getAttribute('data-liked') === 'true') {
                                 alert('您已经点赞过这篇帖子');
                                 return;
                             }
-                            
-                            // 发送点赞请求
                             fetch(`/api/posts/${postId}/like`, {
                                 method: 'POST',
                                 headers: {
@@ -289,13 +302,10 @@ function loadPostList() {
                             .then(response => response.json())
                             .then(data => {
                                 if (data.status === 0) {
-                                    // 点赞成功，更新点赞数
                                     this.innerHTML = `👍 ${data.like_count}`;
-                                    // 标记为已点赞状态
                                     this.classList.add('liked');
                                     this.setAttribute('data-liked', 'true');
                                 } else if (data.status === 3) {
-                                    // 已点赞过
                                     alert(data.msg);
                                     this.classList.add('liked');
                                     this.setAttribute('data-liked', 'true');
@@ -339,7 +349,6 @@ function deletePost(postId) {
     .then(data => {
         if (data.status === 0) {
             alert('帖子删除成功！');
-            // 重新加载帖子列表，而不是刷新整个页面
             loadPostList();
         } else {
             alert('删除失败: ' + (data.msg || '未知错误'));

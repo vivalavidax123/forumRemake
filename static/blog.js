@@ -2,7 +2,7 @@
 let currentUserId = null;
 let currentUsername = null;
 let postAuthorId = null;
-let isFollowing = false; // 新增：跟踪是否Following';作者
+let isFollowing = false;
 
 // 登录区渲染及事件绑定
 function updateUserArea() {
@@ -14,16 +14,22 @@ function updateUserArea() {
 
     if (currentUserId && currentUsername) {
         userArea.innerHTML = `
-            <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
+            <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}"
+                 alt="avatar"
+                 class="user-avatar"
+                 id="headerAvatar"
+                 style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;cursor:pointer;">
             <button class="logout-btn" id="logoutBtn">退出</button>
         `;
+        document.getElementById('headerAvatar').onclick = function() {
+            window.location.href = `/user/${currentUserId}`;
+        };
         document.getElementById('logoutBtn').onclick = function() {
             localStorage.removeItem('userId');
             localStorage.removeItem('username');
             localStorage.removeItem('avatar');
             window.location.reload();
         };
-
     } else {
         userArea.innerHTML = `
             <button id="loginBtn">登录</button>
@@ -34,22 +40,16 @@ function updateUserArea() {
     }
 }
 
-// 页面初始化，加载帖子、评论、绑定事件
+
 document.addEventListener('DOMContentLoaded', function () {
     updateUserArea();
-
-    // 加载帖子详情
     loadPostDetail();
-
-    // 加载评论列表
     loadComments();
 
-    // 返回首页
     document.getElementById('homeLink').addEventListener('click', function() {
         window.location.href = '/';
     });
 
-    // 点赞功能
     document.getElementById('likeBtn').addEventListener('click', function() {
         if (!currentUserId) {
             alert('Please log in to like this post!');
@@ -85,35 +85,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // 删除帖子功能
     document.getElementById('deleteBtn').addEventListener('click', function() {
         if (confirm('Sure you want to delete this post?')) {
             deletePost();
         }
     });
 
-    // 提交评论
     document.getElementById('submitComment').addEventListener('click', submitComment);
 
-    // 关注/取消关注作者按钮 - 新增
     document.getElementById('followBtn').addEventListener('click', toggleFollow);
 });
 
-// 新增：切换关注状态
+// 切换关注状态
 function toggleFollow() {
     if (!currentUserId) {
         alert('Please log in to follow!');
         return;
     }
-
     if (currentUserId == postAuthorId) {
         alert('You cannot follow yourself!');
         return;
     }
-
-    const followBtn = document.getElementById('followBtn');
     const apiEndpoint = isFollowing ? '/api/unfollow' : '/api/follow';
-
     fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,8 +129,6 @@ function toggleFollow() {
         alert('网络错误，请稍后重试');
     });
 }
-
-// 新增：更新关注按钮状态
 function updateFollowButtonStatus() {
     const followBtn = document.getElementById('followBtn');
     if (isFollowing) {
@@ -148,19 +139,14 @@ function updateFollowButtonStatus() {
         followBtn.classList.remove('following');
     }
 }
-
-// 新增：检查是否Following';作者
 function checkFollowStatus() {
     if (!currentUserId || !postAuthorId || currentUserId == postAuthorId) {
-        // 未登录、无作者ID或自己的帖子不需要检查
         return;
     }
-
     fetch(`/api/following?user_id=${currentUserId}`)
         .then(response => response.json())
         .then(data => {
             if (data.status === 0 && data.followings) {
-                // 检查当前作者是否在关注列表中
                 isFollowing = data.followings.some(user => user.id == postAuthorId);
                 updateFollowButtonStatus();
             }
@@ -169,8 +155,6 @@ function checkFollowStatus() {
             console.error('获取关注状态错误:', error);
         });
 }
-
-// 检查帖子点赞状态
 function checkPostLikeStatus() {
     if (currentUserId) {
         fetch(`/api/posts/${postId}/like/check?user_id=${currentUserId}`)
@@ -189,7 +173,7 @@ function checkPostLikeStatus() {
     }
 }
 
-// 加载帖子详情
+// =============== 修改处：作者名、头像可跳转 ===============
 function loadPostDetail() {
     fetch(`/api/posts/${postId}`)
         .then(response => response.json())
@@ -200,24 +184,26 @@ function loadPostDetail() {
                 document.getElementById('post-title').innerText = post.title;
                 document.getElementById('post-content').innerText = post.content;
                 document.getElementById('likeCount').innerText = post.like_count;
-                // 获取作者信息
+
                 fetch(`/api/user?user_id=${post.user_id}`)
                     .then(response => response.json())
                     .then(userData => {
                         if (userData.status === 0) {
                             const authorName = userData.user.username || `用户ID: ${post.user_id}`;
-                            document.getElementById('author-name').innerText = authorName;
-                            document.getElementById('sidebar-username').innerText = authorName;
-
-                            // 如果有头像，更新头像
+                            const authorId = userData.user.id;
+                            // 用户名变a标签
+                            document.getElementById('author-name').innerHTML =
+                                `<a href="/user/${authorId}" class="user-link">${authorName}</a>`;
+                            document.getElementById('sidebar-username').innerHTML =
+                                `<a href="/user/${authorId}" class="user-link">${authorName}</a>`;
+                            // 头像可点击
+                            const avatarDiv = document.getElementById('authorAvatar');
+                            avatarDiv.style.cursor = "pointer";
+                            avatarDiv.onclick = () => window.location.href = `/user/${authorId}`;
                             if (userData.user.avatar) {
-                                document.getElementById('authorAvatar').style.backgroundImage = `url('${userData.user.avatar}')`;
+                                avatarDiv.style.backgroundImage = `url('${userData.user.avatar}')`;
                             }
-
-                            // 检查关注状态 - 新增
                             checkFollowStatus();
-
-                            // 自己的帖子不显示关注按钮
                             if (currentUserId && currentUserId == post.user_id) {
                                 document.getElementById('followBtn').style.display = 'none';
                             }
@@ -228,11 +214,9 @@ function loadPostDetail() {
                 const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                 document.getElementById('post-date').innerText = formattedDate;
                 document.title = `${post.title} - Easy Blog`;
-                // 是否显示删除按钮
                 if (currentUserId && currentUserId == post.user_id) {
                     document.getElementById('deleteBtn').style.display = 'inline-flex';
                 }
-                // 检查点赞状态
                 setTimeout(checkPostLikeStatus, 500);
             } else {
                 alert('加载帖子失败: ' + (data.msg || '未知错误'));
@@ -245,31 +229,7 @@ function loadPostDetail() {
         });
 }
 
-// 删除帖子
-function deletePost() {
-    if (!currentUserId) {
-        alert('请先登录！');
-        return;
-    }
-    fetch(`/api/posts/${postId}?user_id=${currentUserId}`, {
-        method: 'DELETE'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 0) {
-            alert('帖子删除成功！');
-            window.location.href = '/';
-        } else {
-            alert('删除失败: ' + (data.msg || '未知错误'));
-        }
-    })
-    .catch(error => {
-        console.error('删除帖子请求错误:', error);
-        alert('网络错误，请稍后重试');
-    });
-}
-
-// 为评论点赞按钮添加事件
+// =============== 修改处：评论区用户名可跳转 ===============
 function addLikeEventToComment(commentElement, commentId) {
     const likeSpan = commentElement.querySelector('.comment-meta span:last-child');
     if (likeSpan) {
@@ -320,8 +280,6 @@ function addLikeEventToComment(commentElement, commentId) {
         });
     }
 }
-
-// 加载评论列表
 function loadComments() {
     if (window.isLoadingComments) return;
     window.isLoadingComments = true;
@@ -350,8 +308,9 @@ function loadComments() {
                     const commentDiv = document.createElement('div');
                     commentDiv.className = 'comment-item';
                     commentDiv.dataset.id = comment.id;
+                    // 用户名a标签
                     commentDiv.innerHTML = `
-                        <div class="comment-user">用户ID: ${comment.user_id}</div>
+                        <div class="comment-user"><a href="/user/${comment.user_id}" class="user-link">用户ID: ${comment.user_id}</a></div>
                         <div class="comment-content">${comment.content || ''}</div>
                         <div class="comment-meta">
                             <span>${formattedDate}</span>
@@ -360,20 +319,17 @@ function loadComments() {
                     `;
                     commentListDiv.appendChild(commentDiv);
                     addLikeEventToComment(commentDiv, comment.id);
-                    // 异步获取用户名
-                    if (comment.user_id.toString() === currentUserId) {
-                        const userElement = commentDiv.querySelector('.comment-user');
-                        if (userElement) userElement.textContent = currentUsername;
-                    } else {
-                        fetch(`/api/user?user_id=${comment.user_id}`)
-                        .then(response => response.json())
-                        .then(userData => {
-                            if (userData.status === 0 && userData.user) {
-                                const userElement = commentDiv.querySelector('.comment-user');
-                                if (userElement) userElement.textContent = userData.user.username || `用户ID: ${comment.user_id}`;
+                    // 异步获取用户名并更新a标签内容
+                    fetch(`/api/user?user_id=${comment.user_id}`)
+                    .then(response => response.json())
+                    .then(userData => {
+                        if (userData.status === 0 && userData.user) {
+                            const userElement = commentDiv.querySelector('.comment-user a');
+                            if (userElement) {
+                                userElement.textContent = userData.user.username || `用户ID: ${comment.user_id}`;
                             }
-                        });
-                    }
+                        }
+                    });
                 } catch (error) {
                     console.error('处理评论时出错:', error);
                 }
@@ -395,7 +351,6 @@ function loadComments() {
         });
 }
 
-// 提交评论
 function submitComment() {
     if (!currentUserId) {
         alert('请先登录再发表评论！');
@@ -435,7 +390,6 @@ function submitComment() {
                 like_count: 0
             };
             addNewComment(tempComment, true);
-            // AI回复检测
             const hasAIMention = commentContent.toLowerCase().includes('@deepseek') ||
                                  commentContent.toLowerCase().includes('@bot');
             if (hasAIMention) {
@@ -465,7 +419,6 @@ function submitComment() {
     });
 }
 
-// 添加新评论到列表（不刷新全部评论）
 function addNewComment(comment, isNew = false) {
     const commentListDiv = document.getElementById('commentList');
     const noCommentsDiv = document.getElementById('noComments');
@@ -477,7 +430,7 @@ function addNewComment(comment, isNew = false) {
         commentDiv.className = isNew ? 'comment-item new-comment' : 'comment-item';
         commentDiv.dataset.id = comment.id;
         commentDiv.innerHTML = `
-            <div class="comment-user">${currentUsername || ('用户ID: ' + comment.user_id)}</div>
+            <div class="comment-user"><a href="/user/${comment.user_id}" class="user-link">${currentUsername || ('用户ID: ' + comment.user_id)}</a></div>
             <div class="comment-content">${comment.content}</div>
             <div class="comment-meta">
                 <span>${formattedDate}</span>
@@ -494,4 +447,26 @@ function addNewComment(comment, isNew = false) {
     } catch (error) {
         console.error('添加新评论出错:', error);
     }
+}
+function deletePost() {
+    if (!currentUserId) {
+        alert('请先登录！');
+        return;
+    }
+    fetch(`/api/posts/${postId}?user_id=${currentUserId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 0) {
+            alert('帖子删除成功！');
+            window.location.href = '/';
+        } else {
+            alert('删除失败: ' + (data.msg || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('删除帖子请求错误:', error);
+        alert('网络错误，请稍后重试');
+    });
 }
