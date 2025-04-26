@@ -3,214 +3,69 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>帖子详情 - 简易论坛</title>
+    <title>帖子详情 - Easy Blog</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='blog.css') }}">
-    <style>
-        .comment-section {
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-
-        .comment-form {
-            margin-bottom: 30px;
-        }
-
-        .comment-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .comment-btn {
-            background: #056de8;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 20px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-
-        .comment-btn:hover {
-            background: #2252c4;
-        }
-
-        .comment-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .comment-item {
-            padding: 15px;
-            background: #f9f9fb;
-            border-radius: 8px;
-        }
-
-        .comment-user {
-            color: #056de8;
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
-
-        .comment-content {
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .comment-meta {
-            margin-top: 8px;
-            font-size: 13px;
-            color: #999;
-        }
-
-        .like-btn {
-            display: inline-flex;
-            align-items: center;
-            background: #f0f4ff;
-            color: #056de8;
-            border: 1px solid #e0e9ff;
-            border-radius: 20px;
-            padding: 8px 20px;
-            margin-right: 15px;
-            cursor: pointer;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        .like-btn:hover {
-            background: #e0e9ff;
-        }
-
-        .action-bar {
-            margin-top: 30px;
-            display: flex;
-            align-items: center;
-        }
-
-        .back-btn {
-            color: #666;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            font-size: 15px;
-        }
-
-        .back-btn:hover {
-            color: #056de8;
-        }
-
-        .no-comments {
-            color: #999;
-            font-style: italic;
-            margin: 20px 0;
-        }
-        
-        .user-info {
-            margin-right: 15px;
-        }
-        
-        .logout-btn {
-            background: #f0f0f0 !important;
-            color: #333 !important;
-        }
-        
-        /* 新增：评论提交中的加载状态 */
-        .submitting {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        
-        /* 新增：评论动画效果 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .new-comment {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* 新增：删除按钮样式 */
-        .delete-btn {
-            display: inline-flex;
-            align-items: center;
-            background: #ffecec;
-            color: #ff4d4f;
-            border: 1px solid #ffd6d6;
-            border-radius: 20px;
-            padding: 8px 20px;
-            margin-left: auto;
-            cursor: pointer;
-            font-size: 15px;
-            transition: all 0.2s;
-        }
-
-        .delete-btn:hover {
-            background: #ffd6d6;
-        }
-    </style>
+    
 </head>
 
 <body>
     <header class="navbar">
-        <div class="logo" id="homeLink">简易论坛</div>
-        <div class="user" id="userInfo">
-            <!-- 用户信息会在JavaScript中动态填充 -->
+        <div class="header-top">
+            <div class="logo" id="homeLink">Easy Blog</div>
+            <input class="search" type="text" id="searchInput" placeholder="搜索你感兴趣的内容">
+            <div class="user" id="userArea">
+                <!-- 用户信息由JS动态填充 -->
+            </div>
+        </div>
+        <div class="header-bottom">
+            <a href="/">Home</a>
+            <a href="/hot">Hot</a>
+            <a href="/follow">Following</a>
         </div>
     </header>
 
     <div class="main-detail">
-        <article class="article-content">
+        <main class="article-content">
             <h1 id="post-title">加载中...</h1>
             <div class="article-meta">
                 <span class="author" id="author-name">用户</span>
                 <span class="date" id="post-date">发布时间</span>
             </div>
-
             <div class="article-body" id="post-content">
                 内容加载中...
             </div>
-
             <div class="action-bar">
                 <button class="like-btn" id="likeBtn">
                     👍 <span id="likeCount">0</span>
                 </button>
                 <a href="/" class="back-btn">← 返回首页</a>
-                <!-- 新增：删除按钮，默认隐藏 -->
-                <button class="delete-btn" id="deleteBtn" style="display: none;">删除帖子</button>
+                <button class="delete-btn" id="deleteBtn" style="display:none;">删除帖子</button>
             </div>
-
             <div class="comment-section">
                 <h3>评论区</h3>
-
                 <div class="comment-form" id="commentForm">
                     <textarea class="comment-input" id="commentInput" placeholder="写下你的评论..."></textarea>
                     <button class="comment-btn" id="submitComment">提交评论</button>
                 </div>
-
                 <div class="comment-list" id="commentList">
-                    <!-- 评论将通过JavaScript动态加载 -->
                     <div class="no-comments" id="noComments">暂无评论，来抢沙发吧</div>
                 </div>
             </div>
-        </article>
-
-        <div class="author-info">
+        </main>
+        <aside class="author-info">
             <div class="author-card">
-                <div class="author-avatar"></div>
+                <div class="author-avatar" id="authorAvatar"></div>
                 <h4 id="sidebar-username">用户</h4>
-                <p class="bio">欢迎来到简易论坛！</p>
+                <p class="bio">欢迎来到Easy Blog！</p>
                 <button class="follow-btn">关注</button>
             </div>
-        </div>
+        </aside>
     </div>
+
+    <footer class="footer">
+        &copy; Hackton 2025 Easy Blog
+    </footer>
+    <!-- 复用主页 main.js（推荐这样写，样式功能都统一） -->
 
     <script>
         // 获取当前帖子ID
