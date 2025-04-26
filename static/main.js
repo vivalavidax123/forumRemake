@@ -54,13 +54,12 @@ function renderUserProfileNotLogin() {
         userProfile.innerHTML = `
             <img src="/static/avatar.png" class="avatar" id="avatar">
             <div class="user-info">
-                <div class="username" id="username" style="color:#2196f3; font-weight:bold;">未登录</div>
+                <div class="username" id="username" style="color:#2196f3; font-weight:bold;">No login</div>
                 <div class="stats">
                   <span>Blog <b id="postCount">0</b></span>
                   <span>Following <b id="followCount">0</b></span>
                 </div>
             </div>
-            <button class="write-btn" onclick="window.location.href='/login'">请登录</button>
         `;
     }
 }

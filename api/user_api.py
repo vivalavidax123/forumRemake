@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from database import db, User
+from database import db, User, Follow
 import os
 import uuid
 
@@ -193,3 +193,22 @@ def change_avatar():
     user.avatar = f'/static/{avatar_filename}'
     db.session.commit()
     return jsonify({'status': 0, 'msg': '头像更新成功', 'avatar': user.avatar})
+
+@user_api.route('/api/follow', methods=['POST'])
+def follow_user():
+    data = request.get_json()
+    follower_id = data.get('follower_id')
+    followee_id = data.get('followee_id')
+    if not follower_id or not followee_id:
+        return jsonify({'status': 1, 'msg': '缺少参数'})
+    if follower_id == followee_id:
+        return jsonify({'status': 2, 'msg': '不能关注自己'})
+    # 检查是否已关注
+    exists = Follow.query.filter_by(follower_id=follower_id, followee_id=followee_id).first()
+    if exists:
+        return jsonify({'status': 3, 'msg': '已经关注过了'})
+    follow = Follow(follower_id=follower_id, followee_id=followee_id)
+    db.session.add(follow)
+    db.session.commit()
+    return jsonify({'status': 0, 'msg': '关注成功'})
+
