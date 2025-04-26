@@ -2,9 +2,9 @@ from flask import Blueprint, request, jsonify
 from database import db, Post
 import audit
 
-
 post_api = Blueprint('post_api', __name__)
 
+@post_api.route('/api/write', methods=['POST'])
 @post_api.route('/api/posts', methods=['POST'])
 def create_post():
     data = request.get_json()
@@ -12,28 +12,29 @@ def create_post():
     title = data.get('title')
     content = data.get('content')
     if not (user_id and title and content):
-        return jsonify({'status': 1, 'msg': '缺少参数'})
-    ''' ai 检测
+        return jsonify({'status': 1, 'msg': 'Missing parameters.'})
+
+    '''
+    # AI content audit
     ok, msg = audit.audit_by_deepseek(title, content)
     if not ok:
-        # 审核不通过，直接返回错误信息
-        return jsonify({'status': 2, 'msg': f'发帖失败，原因：{msg}'})
-    
+        # Audit failed, return the error message
+        return jsonify({'status': 2, 'msg': f'Post failed, reason: {msg}'})
     '''
 
     post = Post(user_id=user_id, title=title, content=content)
     db.session.add(post)
     db.session.commit()
-    return jsonify({'status': 0, 'msg': '发帖成功', 'post_id': post.id})
-
+    return jsonify({'status': 0, 'msg': 'Post created successfully.', 'post_id': post.id})
 
 from sqlalchemy import or_
 
+@post_api.route('/api/write', methods=['GET'])
 @post_api.route('/api/posts', methods=['GET'])
 def get_posts():
-    key = request.args.get('key', '')  # 获取 ?key=xxx 参数，默认空字符串
+    key = request.args.get('key', '')  # Get ?key=xxx parameter, default empty string
     if key:
-        # 模糊查询：标题或内容包含 key 的帖子
+        # Fuzzy search: posts where the title or content contains the key
         posts = Post.query.filter(
             or_(
                 Post.title.like(f'%{key}%'),
@@ -41,7 +42,7 @@ def get_posts():
             )
         ).order_by(Post.create_time.desc()).all()
     else:
-        # 没有 key 参数，返回所有帖子
+        # No key parameter, return all posts
         posts = Post.query.order_by(Post.create_time.desc()).all()
     result = []
     for p in posts:
@@ -56,13 +57,12 @@ def get_posts():
         })
     return jsonify({'status': 0, 'posts': result})
 
-
-
+@post_api.route('/api/write/<int:post_id>', methods=['GET'])
 @post_api.route('/api/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({'status': 1, 'msg': '帖子不存在'})
+        return jsonify({'status': 1, 'msg': 'Post does not exist.'})
     data = {
         'id': post.id,
         'title': post.title,
@@ -74,8 +74,7 @@ def get_post(post_id):
     }
     return jsonify({'status': 0, 'post': data})
 
-
-
+@post_api.route('/api/write/user/<int:user_id>', methods=['GET'])
 @post_api.route('/api/posts/user/<int:user_id>', methods=['GET'])
 def get_user_posts(user_id):
     posts = Post.query.filter_by(user_id=user_id).order_by(Post.create_time.desc()).all()
@@ -91,16 +90,11 @@ def get_user_posts(user_id):
         })
     return jsonify({'status': 0, 'posts': result})
 
-
 @post_api.route('/api/posts/<int:post_id>/like', methods=['POST'])
 def like_post(post_id):
     post = Post.query.get(post_id)
     if not post:
-        return jsonify({'status': 1, 'msg': '帖子不存在'})
+        return jsonify({'status': 1, 'msg': 'Post does not exist.'})
     post.like_count += 1
     db.session.commit()
-    return jsonify({'status': 0, 'msg': '点赞成功', 'like_count': post.like_count})
-
-
-
-
+    return jsonify({'status': 0, 'msg': 'Liked successfully.', 'like_count': post.like_count})

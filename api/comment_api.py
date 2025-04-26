@@ -15,16 +15,23 @@ def add_comment():
     parent_id = data.get('parent_id')
 
     if not (post_id and user_id and content):
-        return jsonify({'status': 1, 'msg': '缺少参数'})
+        return jsonify({'status': 1, 'msg': 'Missing parameters.'})
 
-    # 限制最多二级评论
+    '''
+    # AI content audit
+    ok, msg = audit.audit_by_deepseek(title, content)
+    if not ok:
+        # Audit failed, return the error message
+        return jsonify({'status': 2, 'msg': f'Post failed, reason: {msg}'})
+    '''
+
+    # Limit to a maximum of 2-level comments
     if parent_id:
         parent_comment = Comment.query.get(parent_id)
         if not parent_comment:
-            return jsonify({'status': 2, 'msg': '父评论不存在'})
+            return jsonify({'status': 3, 'msg': 'Parent comment does not exist.'})
         if parent_comment.parent_id:
-            return jsonify({'status': 3, 'msg': '最多只允许二级评论，无法再回复此评论'})
-
+            return jsonify({'status': 4, 'msg': 'Only up to two levels of comments are allowed. Cannot reply to this comment.'})
 
     comment = Comment(
         post_id=post_id,
@@ -33,23 +40,22 @@ def add_comment():
         parent_id=parent_id,
     )
     db.session.add(comment)
-    # 同步更新帖子评论数
+    # Synchronously update the post's comment count
     post = Post.query.get(post_id)
     if post:
         post.comment_count += 1
     db.session.commit()
 
-
-    # 检查是否@deepseek
+    # Check for @deepseek or @bot in content
     if ('@deepseek' in content.lower()) or ('@bot' in content.lower()):
-        # 1. 获取或创建 bot 用户
+        # 1. Get or create bot user
         bot_user = get_deepseek()
-        # 2. 获取帖子的标题和内容（用于AI增强理解）
+        # 2. Get post's title and content (for AI understanding)
         post_title = post.title if post else None
         post_content = post.content if post else None
-        # 3. 调用 AI 生成回复
+        # 3. Call AI to generate reply
         ai_reply = ai_comment(user_comment=content, post_title=post_title, post_content=post_content)
-        # 4. 插入AI回复评论
+        # 4. Insert AI reply as comment
         bot_comment = Comment(
             post_id=post_id,
             user_id=bot_user.id,
@@ -61,16 +67,13 @@ def add_comment():
             post.comment_count += 1
         db.session.commit()
 
-
-    return jsonify({'status': 0, 'msg': '评论成功', 'comment_id': comment.id})
-
-
+    return jsonify({'status': 0, 'msg': 'Comment added successfully.', 'comment_id': comment.id})
 
 @comment_api.route('/api/comments', methods=['GET'])
 def get_comments():
     post_id = request.args.get('post_id')
     if not post_id:
-        return jsonify({'status': 1, 'msg': '缺少post_id参数'})
+        return jsonify({'status': 1, 'msg': 'Missing post_id parameter.'})
     comments = Comment.query.filter_by(post_id=post_id) \
         .order_by(Comment.create_time.asc(), Comment.id.asc()).all()
     result = []
@@ -84,13 +87,12 @@ def get_comments():
         })
     return jsonify({'status': 0, 'comments': result})
 
-
-# 点赞评论
+# Like a comment
 @comment_api.route('/api/comments/<int:comment_id>/like', methods=['POST'])
 def like_comment(comment_id):
     comment = Comment.query.get(comment_id)
     if not comment:
-        return jsonify({'status': 1, 'msg': '评论不存在'})
+        return jsonify({'status': 1, 'msg': 'Comment does not exist.'})
     comment.like_count += 1
     db.session.commit()
-    return jsonify({'status': 0, 'msg': '点赞成功', 'like_count': comment.like_count})
+    return jsonify({'status': 0, 'msg': 'Liked successfully.', 'like_count': comment.like_count})
