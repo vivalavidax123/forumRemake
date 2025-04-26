@@ -3,7 +3,7 @@
 function updateUserArea() {
     const userId = localStorage.getItem('userId');
     const username = localStorage.getItem('username');
-    const avatar = localStorage.getItem('avatar');  
+    const avatar = localStorage.getItem('avatar');  // 读取最新头像
     const userArea = document.getElementById('userArea');
     if (!userArea) return;
 
@@ -38,6 +38,7 @@ function updateUserArea() {
 }
 
 
+
 // ========== 2. 右侧栏：用户卡片渲染 ==========
 
 function renderUserProfileLoading() {
@@ -68,16 +69,55 @@ function renderUserProfileLogin(user) {
     const userProfile = document.getElementById('userProfile');
     if (userProfile) {
         userProfile.innerHTML = `
-            <img src="${user.avatar || '/static/avatar.png'}" alt="头像" class="avatar" id="avatar">
+            <img src="${user.avatar || '/static/avatar.png'}" alt="用户头像" class="avatar" id="avatar">
             <div class="user-info">
-                <div class="username" id="username" style="color:#2196f3; font-weight:bold;">${user.username}</div>
+                <div class="username" id="username">${user.username}</div>
                 <div class="stats">
                   <span>Blog <b id="postCount">${user.post_count || 0}</b></span>
                   <span>Following <b id="followCount">${user.follow_count || 0}</b></span>
                 </div>
             </div>
-            <button class="write-btn" onclick="window.location.href='/write'">写文章</button>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+            <button class="write-btn" id="changeAvatarBtn">更改头像</button>
         `;
+        // 绑定事件
+        document.getElementById('changeAvatarBtn').onclick = function() {
+            document.getElementById('avatarInput').click();
+        };
+        document.getElementById('avatarInput').onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            // 限制大小和类型可选
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+            // 上传文件到后端
+            const userId = localStorage.getItem('userId');
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('avatar', file);
+
+            fetch('/api/user/avatar', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 0) {
+                    // 1. 更新本地头像路径
+                    localStorage.setItem('avatar', data.avatar || '/static/avatar.png');
+                    // 2. 立刻刷新header头像
+                    updateUserArea();
+                    // 3. 侧边栏图片直接更
+                    document.getElementById('avatar').src = data.avatar || '/static/avatar.png';
+                    alert('头像更换成功！');
+                } else {
+                    alert(data.msg || '头像更换失败');
+                }
+            })
+            .catch(() => alert('网络错误，头像上传失败'));
+        };
     }
 }
 
@@ -90,17 +130,22 @@ function loadUserProfile() {
         return;
     }
     fetch(`/api/profile?user_id=${encodeURIComponent(userId)}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 0 && data.data) {
-                renderUserProfileLogin(data.data); // 这里一定要是 data.data
-            } else {
-                renderUserProfileNotLogin();
-            }
-        })
-        .catch(() => {
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 0 && data.data) {
+            renderUserProfileLogin(data.data);
+            // 关键：同步最新头像到localStorage（header用到的）
+            localStorage.setItem('avatar', data.data.avatar || '/static/avatar.png');
+            // 同步更新header
+            updateUserArea();
+        } else {
             renderUserProfileNotLogin();
-        });
+        }
+    })
+    .catch(() => {
+        renderUserProfileNotLogin();
+    });
+
 }
 
 // 页面加载后自动调用
