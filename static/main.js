@@ -1,39 +1,30 @@
 // ========== 1. 顶部用户区 ==========
 
 function updateUserArea() {
-    const userId = localStorage.getItem('userId');
-    const username = localStorage.getItem('username');
-    const avatar = localStorage.getItem('avatar');  // 读取最新头像
+    currentUserId = localStorage.getItem('userId');
+    currentUsername = localStorage.getItem('username');
+    const avatar = localStorage.getItem('avatar');
     const userArea = document.getElementById('userArea');
     if (!userArea) return;
 
-    if (userId && username) {
+    if (currentUserId && currentUsername) {
         userArea.innerHTML = `
             <img src="${avatar || '/static/avatar/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
-            <span class="user-info">${username}</span>
-            <button class="post-btn" id="writeBtn">Post</button>
-            <button class="logout-btn" id="logoutBtn">Logout</button>
+            <button class="logout-btn" id="logoutBtn">退出</button>
         `;
-        document.getElementById('logoutBtn').addEventListener('click', function() {
+        document.getElementById('logoutBtn').onclick = function() {
             localStorage.removeItem('userId');
             localStorage.removeItem('username');
             localStorage.removeItem('avatar');
             window.location.reload();
-        });
-        document.getElementById('writeBtn').addEventListener('click', function() {
-            window.location.href = '/write';
-        });
+        };
     } else {
         userArea.innerHTML = `
-            <button id="loginBtn">Login</button>
-            <button id="registerBtn" style="margin-left: 10px;">Register</button>
+            <button id="loginBtn">登录</button>
+            <button id="registerBtn" style="margin-left: 10px;">注册</button>
         `;
-        document.getElementById('loginBtn').addEventListener('click', function() {
-            window.location.href = '/login';
-        });
-        document.getElementById('registerBtn').addEventListener('click', function() {
-            window.location.href = '/register';
-        });
+        document.getElementById('loginBtn').onclick = () => window.location.href = '/login';
+        document.getElementById('registerBtn').onclick = () => window.location.href = '/register';
     }
 }
 
