@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile - Easy Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <header class="navbar">
+        <div class="header-top">
+            <div class="logo" id="homeLink">Easy Blog</div>
+            <input class="search" type="text" id="searchInput" placeholder="Search for something interesting">
+            <div class="user" id="userArea"></div>
+        </div>
+        <div class="header-bottom">
+            <a href="/">Home</a>
+            <a href="/hot">Hot</a>
+            <a href="/follow">Following</a>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <main class="center">
+            <div class="user-profile main-profile" id="profileInfo">
+                <!-- User info will be filled by JS -->
+            </div>
+            <div class="feed" id="userPostList">
+                <div class="question-card"><h3>Loading...</h3></div>
+            </div>
+        </main>
+
+        <aside class="right">
+            <!-- Sidebar: follower and post counts (English) -->
+            <div class="profile-sidebar" id="profileSidebar">
+                <div style="text-align:center;padding:24px;">Loading...</div>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        &copy; Hackton 2025 Easy Blog
+    </footer>
+
+    <script>
+    // User id from Flask backend
+    const userId = {{ user_id }};
+    </script>
+    <script src="{{ url_for('static', filename='profile.js') }}"></script>
+</body>
+</html>

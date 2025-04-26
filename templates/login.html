@@ -19,7 +19,7 @@
       <input type="password" id="password" placeholder="Enter password" required>
       <button type="submit">Login</button>
     </form>
-    <div id="login-tip" style="color:#ff4d4f;margin-top:-10px;display:none;">用户名不存在</div>
+    <div id="login-tip" style="color:#ff4d4f;margin-top:-10px;display:none;">Username does not exist</div>
     <div style="margin-top:10px;">
       <a href="/register" style="color:#056de8;text-decoration:none;">Regist Now</a>
     </div>
@@ -32,13 +32,13 @@
       const password = document.getElementById('password').value.trim();
 
       if (!username) {
-        document.getElementById('login-tip').innerText = '请输入用户名';
+        document.getElementById('login-tip').innerText = 'Please enter your username';
         document.getElementById('login-tip').style.display = 'block';
         return;
       }
 
       if (!password) {
-        document.getElementById('login-tip').innerText = '请输入密码';
+        document.getElementById('login-tip').innerText = 'Please enter your password';
         document.getElementById('login-tip').style.display = 'block';
         return;
       }
@@ -69,8 +69,8 @@
           }
         })
         .catch(error => {
-          console.error('登录请求错误:', error);
-          document.getElementById('login-tip').innerText = '网络错误，请稍后重试';
+          console.error('Login request error:', error);
+          document.getElementById('login-tip').innerText = 'Network error, please try again later.';
           document.getElementById('login-tip').style.display = 'block';
         });
     });

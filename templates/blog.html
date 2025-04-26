@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>帖子详情 - Easy Blog</title>
+    <title>Post Details - Easy Blog</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='blog.css') }}">
     
 </head>
@@ -38,26 +38,26 @@
                 <button class="like-btn" id="likeBtn">
                     👍 <span id="likeCount">0</span>
                 </button>
-                <a href="/" class="back-btn">← 返回首页</a>
-                <button class="delete-btn" id="deleteBtn" style="display:none;">删除帖子</button>
+                <a href="/" class="back-btn">← Back to Home</a>
+                <button class="delete-btn" id="deleteBtn" style="display:none;">Delete Post</button>
             </div>
             <div class="comment-section">
-                <h3>评论区</h3>
+                <h3>Comments</h3>
                 <div class="comment-form" id="commentForm">
-                    <textarea class="comment-input" id="commentInput" placeholder="写下你的评论..."></textarea>
-                    <button class="comment-btn" id="submitComment">提交评论</button>
+                    <textarea class="comment-input" id="commentInput" placeholder="Write your comment..."></textarea>
+                    <button class="comment-btn" id="submitComment">Submit Comment</button>
                 </div>
                 <div class="comment-list" id="commentList">
-                    <div class="no-comments" id="noComments">暂无评论，来抢沙发吧</div>
+                    <div class="no-comments" id="noComments">No comments yet. Be the first to comment!</div>
                 </div>
             </div>
         </main>
         <aside class="author-info">
             <div class="author-card">
                 <div class="author-avatar" id="authorAvatar"></div>
-                <h4 id="sidebar-username">用户</h4>
-                <p class="bio">欢迎来到Easy Blog！</p>
-                <button class="follow-btn" id="followBtn">关注</button>
+                <h4 id="sidebar-username">User</h4>
+                <p class="bio">Welcome to Easy Blog！</p>
+                <button class="follow-btn" id="followBtn">Follow</button>
             </div>
         </aside>
     </div>

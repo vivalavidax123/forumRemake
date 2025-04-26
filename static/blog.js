@@ -14,12 +14,17 @@ function updateUserArea() {
 
     if (currentUserId && currentUsername) {
         userArea.innerHTML = `
+<<<<<<< HEAD
             <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}"
                  alt="avatar"
                  class="user-avatar"
                  id="headerAvatar"
                  style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;cursor:pointer;">
             <button class="logout-btn" id="logoutBtn">退出</button>
+=======
+            <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
+            <button class="logout-btn" id="logoutBtn">Log out</button>
+>>>>>>> 31ec6dd62825eaa973ee59f92a6e51f34e412e71
         `;
         document.getElementById('headerAvatar').onclick = function() {
             window.location.href = `/user/${currentUserId}`;
@@ -32,8 +37,8 @@ function updateUserArea() {
         };
     } else {
         userArea.innerHTML = `
-            <button id="loginBtn">登录</button>
-            <button id="registerBtn" style="margin-left: 10px;">注册</button>
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn" style="margin-left: 10px;">Register</button>
         `;
         document.getElementById('loginBtn').onclick = () => window.location.href = '/login';
         document.getElementById('registerBtn').onclick = () => window.location.href = '/register';
@@ -77,11 +82,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.style.background = '#e0e9ff';
                 this.style.color = '#003eb3';
             } else {
-                alert('点赞失败: ' + (data.msg || '未知错误'));
+                alert('Like failed: ' + (data.msg || 'unknown error'));
             }
         })
         .catch(error => {
-            console.error('点赞请求错误:', error);
+            console.error('Like failed:', error);
         });
     });
 
@@ -121,12 +126,12 @@ function toggleFollow() {
             isFollowing = !isFollowing;
             updateFollowButtonStatus();
         } else {
-            alert((isFollowing ? '取消关注' : '关注') + '失败: ' + (data.msg || '未知错误'));
+            alert((isFollowing ? 'Unfollow' : 'Follow') + ' failed: ' + (data.msg || 'Unknown error'));
         }
     })
     .catch(error => {
-        console.error('关注请求错误:', error);
-        alert('网络错误，请稍后重试');
+        console.error('Follow request error:', error);
+        alert('Network error, please try again later.');
     });
 }
 function updateFollowButtonStatus() {
@@ -152,7 +157,7 @@ function checkFollowStatus() {
             }
         })
         .catch(error => {
-            console.error('获取关注状态错误:', error);
+            console.error('Follow status fetch error:', error);
         });
 }
 function checkPostLikeStatus() {
@@ -168,7 +173,7 @@ function checkPostLikeStatus() {
                 }
             })
             .catch(error => {
-                console.error('获取点赞状态错误:', error);
+                console.error('Like status fetch error:', error);
             });
     }
 }
@@ -229,7 +234,35 @@ function loadPostDetail() {
         });
 }
 
+<<<<<<< HEAD
 // =============== 修改处：评论区用户名可跳转 ===============
+=======
+// 删除帖子
+function deletePost() {
+    if (!currentUserId) {
+        alert('Please Login');
+        return;
+    }
+    fetch(`/api/posts/${postId}?user_id=${currentUserId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 0) {
+            alert('Delete Success');
+            window.location.href = '/';
+        } else {
+            alert('Delete Failed: ' + (data.msg || 'unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('error:', error);
+        alert('error');
+    });
+}
+
+// 为评论点赞按钮添加事件
+>>>>>>> 31ec6dd62825eaa973ee59f92a6e51f34e412e71
 function addLikeEventToComment(commentElement, commentId) {
     const likeSpan = commentElement.querySelector('.comment-meta span:last-child');
     if (likeSpan) {
@@ -253,7 +286,7 @@ function addLikeEventToComment(commentElement, commentId) {
                 return;
             }
             if (this.getAttribute('data-liked') === 'true') {
-                alert('您已经点赞过这条评论');
+                alert('You have already liked this comment.');
                 return;
             }
             fetch(`/api/comments/${commentId}/like`, {
@@ -274,7 +307,7 @@ function addLikeEventToComment(commentElement, commentId) {
                     this.style.fontWeight = 'bold';
                     this.setAttribute('data-liked', 'true');
                 } else {
-                    alert('点赞失败: ' + (data.msg || '未知错误'));
+                    alert('Like failed: ' + (data.msg || 'error'));
                 }
             });
         });
@@ -331,20 +364,20 @@ function loadComments() {
                         }
                     });
                 } catch (error) {
-                    console.error('处理评论时出错:', error);
+                    console.error('Error occurred while processing the comment:', error);
                 }
             });
         })
         .catch(error => {
             window.isLoadingComments = false;
-            console.error('评论请求错误:', error);
+            console.error('Comment request error:', error);
             const commentListDiv = document.getElementById('commentList');
             if (commentListDiv.children.length === 0 ||
                 (commentListDiv.children.length === 1 && commentListDiv.children[0].id === 'noComments')) {
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'comment-item';
                 errorDiv.style.color = '#f56c6c';
-                errorDiv.textContent = '加载评论失败，请刷新页面重试';
+                errorDiv.textContent = 'loading failed';
                 commentListDiv.innerHTML = '';
                 commentListDiv.appendChild(errorDiv);
             }
@@ -353,18 +386,18 @@ function loadComments() {
 
 function submitComment() {
     if (!currentUserId) {
-        alert('请先登录再发表评论！');
+        alert('Please log in first');
         return;
     }
     const commentContent = document.getElementById('commentInput').value.trim();
     if (!commentContent) {
-        alert('评论内容不能为空！');
+        alert('Comment cannot be null');
         return;
     }
     const submitBtn = document.getElementById('submitComment');
     submitBtn.disabled = true;
     submitBtn.classList.add('submitting');
-    submitBtn.textContent = '提交中...';
+    submitBtn.textContent = 'uploading...';
     const commentData = {
         post_id: parseInt(postId),
         user_id: parseInt(currentUserId),
@@ -376,7 +409,7 @@ function submitComment() {
         body: JSON.stringify(commentData)
     })
     .then(response => {
-        if (!response.ok) throw new Error('网络响应异常');
+        if (!response.ok) throw new Error('error(internet)');
         return response.json();
     })
     .then(data => {
@@ -405,7 +438,7 @@ function submitComment() {
                 }, 2000);
             }
         } else {
-            alert('评论失败: ' + (data.msg || '未知错误'));
+            alert('comment error');
         }
     })
     .catch(error => {
@@ -415,7 +448,7 @@ function submitComment() {
     .finally(() => {
         submitBtn.disabled = false;
         submitBtn.classList.remove('submitting');
-        submitBtn.textContent = '提交评论';
+        submitBtn.textContent = 'upload comment';
     });
 }
 
@@ -445,7 +478,7 @@ function addNewComment(comment, isNew = false) {
         addLikeEventToComment(commentDiv, comment.id);
         if (isNew) commentDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {
-        console.error('添加新评论出错:', error);
+        console.error('comment error');
     }
 }
 function deletePost() {

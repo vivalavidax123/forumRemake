@@ -40,25 +40,25 @@
       const email = document.getElementById('email').value.trim();
 
       if (!username) {
-        document.getElementById('register-tip').innerText = '请输入用户名';
+        document.getElementById('register-tip').innerText = 'Please enter you user name';
         document.getElementById('register-tip').style.display = 'block';
         return;
       }
 
       if (!password) {
-        document.getElementById('register-tip').innerText = '请输入密码';
+        document.getElementById('register-tip').innerText = 'Please enter your password';
         document.getElementById('register-tip').style.display = 'block';
         return;
       }
 
       if (password.length < 6) {
-        document.getElementById('register-tip').innerText = '密码长度不能少于6位';
+        document.getElementById('register-tip').innerText = 'Password must be at least 6 characters.';
         document.getElementById('register-tip').style.display = 'block';
         return;
       }
 
       if (password !== confirmPassword) {
-        document.getElementById('register-tip').innerText = '两次输入的密码不一致';
+        document.getElementById('register-tip').innerText = 'Passwords do not match.';
         document.getElementById('register-tip').style.display = 'block';
         return;
       }
@@ -81,11 +81,11 @@
             // 注册成功，自动登录
             localStorage.setItem('userId', data.user_id);
             localStorage.setItem('username', username);
-            alert('注册成功！');
+            alert('Registration successful!');
             window.location.href = '/';
           } else {
             // 注册失败
-            document.getElementById('register-tip').innerText = data.msg || '注册失败';
+            document.getElementById('register-tip').innerText = data.msg || 'Registration failed.';
             document.getElementById('register-tip').style.display = 'block';
           }
         })

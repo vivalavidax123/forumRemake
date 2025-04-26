@@ -36,6 +36,10 @@ def write():
 def blog(post_id):
     return render_template('blog.html', post_id=post_id)
 
+@app.route('/user/<int:user_id>')
+def user_profile(user_id):
+    return render_template('profile.html', user_id=user_id)
+
 @app.route('/follow')
 def follow():
     return render_template('following.html')

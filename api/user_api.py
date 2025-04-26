@@ -25,6 +25,12 @@ def register():
     if User.query.filter_by(username=username).first():
         return jsonify({'status': 2, 'msg': 'Username already exists.'})
 
+<<<<<<< HEAD
+=======
+    # if no avatar
+    if not avatar:
+        avatar = '/static/avatar/no_avatar.png'
+>>>>>>> 31ec6dd62825eaa973ee59f92a6e51f34e412e71
 
     user = User(username=username, password_hash=password_hash, email=email, avatar=avatar)
     db.session.add(user)
