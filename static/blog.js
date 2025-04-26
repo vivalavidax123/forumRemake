@@ -14,17 +14,13 @@ function updateUserArea() {
 
     if (currentUserId && currentUsername) {
         userArea.innerHTML = `
-<<<<<<< HEAD
             <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}"
                  alt="avatar"
                  class="user-avatar"
                  id="headerAvatar"
                  style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;cursor:pointer;">
             <button class="logout-btn" id="logoutBtn">退出</button>
-=======
-            <img src="${avatar || '/static/avatars/sunny_avatar.jpg'}" alt="avatar" class="user-avatar" style="width:32px;height:32px;border-radius:50%;margin-right:10px;object-fit:cover;">
-            <button class="logout-btn" id="logoutBtn">Log out</button>
->>>>>>> 31ec6dd62825eaa973ee59f92a6e51f34e412e71
+
         `;
         document.getElementById('headerAvatar').onclick = function() {
             window.location.href = `/user/${currentUserId}`;
@@ -234,10 +230,8 @@ function loadPostDetail() {
         });
 }
 
-<<<<<<< HEAD
-// =============== 修改处：评论区用户名可跳转 ===============
-=======
-// 删除帖子
+
+
 function deletePost() {
     if (!currentUserId) {
         alert('Please Login');
@@ -262,7 +256,6 @@ function deletePost() {
 }
 
 // 为评论点赞按钮添加事件
->>>>>>> 31ec6dd62825eaa973ee59f92a6e51f34e412e71
 function addLikeEventToComment(commentElement, commentId) {
     const likeSpan = commentElement.querySelector('.comment-meta span:last-child');
     if (likeSpan) {

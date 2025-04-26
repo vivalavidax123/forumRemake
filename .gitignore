@@ -3,7 +3,3 @@ __pycache__/
 *.pyc
 
 # 忽略SQLite数据库文件
-*.db
-*.sqlite
-*.sqlite3
-instance/test.db

@@ -3,6 +3,8 @@ from database import db, Comment, Post, CommentLike
 from datetime import datetime, timezone
 from ai_utils import ai_comment, get_deepseek
 from zoneinfo import ZoneInfo
+import audit
+
 
 comment_api = Blueprint('comment_api', __name__)
 
@@ -17,13 +19,6 @@ def add_comment():
     if not (post_id and user_id and content):
         return jsonify({'status': 1, 'msg': 'Missing parameters.'})
 
-    '''
-    # AI content audit
-    ok, msg = audit.audit_by_deepseek(title, content)
-    if not ok:
-        # Audit failed, return the error message
-        return jsonify({'status': 2, 'msg': f'Post failed, reason: {msg}'})
-    '''
 
     # Limit to a maximum of 2-level comments
     if parent_id:

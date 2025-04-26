@@ -19,13 +19,13 @@ def create_post():
     if not (user_id and title and content):
         return jsonify({'status': 1, 'msg': 'Missing parameters.'})
 
-    '''
+
     # AI content audit
     ok, msg = audit.audit_by_deepseek(title, content)
     if not ok:
         # Audit failed, return the error message
         return jsonify({'status': 2, 'msg': f'Post failed, reason: {msg}'})
-    '''
+
 
     post = Post(
         user_id=user_id,

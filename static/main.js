@@ -348,12 +348,9 @@ function deletePost(postId) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 0) {
-<<<<<<< HEAD
-            alert('帖子删除成功！');
-=======
+
             alert('Delete Success');
             // 重新加载帖子列表，而不是刷新整个页面
->>>>>>> 31ec6dd62825eaa973ee59f92a6e51f34e412e71
             loadPostList();
         } else {
             alert('delete failed');
