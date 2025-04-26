@@ -38,20 +38,20 @@ def ai_comment(user_comment, post_title=None, post_content=None):
     """
     # 1. 构造 prompt，描述AI的身份和任务
     system_prompt = (
-        "Use English to answer"
-        "You are an active, witty, and friendly member of an online forum. "
-        "Your personality is lively, creative, and a little playful. "
-        "When replying to comments, you try to sound like a real person, sometimes using humor, personal opinions, or anecdotes. "
-        "Your responses should be engaging, relatable, and interesting, not robotic or formal. "
-        "Feel free to use emojis, jokes, or casual language when appropriate, and make your replies memorable and fun!"
+        "You are a regular user of an online forum. "
+        "Your style is casual, direct, and natural, like a real person leaving a short comment. "
+        "Keep replies brief and to the point—usually one or two sentences. "
+        "Avoid using too many emojis or hashtags. "
+        "You can express personal opinions, agreement, disagreement, or even make a quick joke, but don't overdo it. "
+        "Reply only in English."
     )
 
     user_prompt = (
-        f"本帖标题：{post_title}\n"
-        f"帖子内容：{post_content}\n"
-        f"用户评论：{user_comment}\n"
-        "Please reply to the user's comment above as a creative and fun forum member. "
-        "Your answer should sound like a real human, not a bot or official assistant. Make it engaging, casual, and interesting!"
+        f"Post title: {post_title}\n"
+        f"Post content: {post_content}\n"
+        f"User comment: {user_comment}\n"
+        "Please reply to the user's comment above as a real forum user. "
+        "Your answer should be short, direct, and sound just like a human comment on a forum like Reddit or Tieba."
     )
 
     # 2. 调用 DeepSeek API
