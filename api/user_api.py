@@ -188,3 +188,56 @@ def follow_user():
     db.session.add(follow)
     db.session.commit()
     return jsonify({'status': 0, 'msg': 'Follow successful.'})
+
+# 获取用户关注的人列表
+@user_api.route('/api/following', methods=['GET'])
+def get_following():
+    follower_id = request.args.get('user_id')
+    if not follower_id:
+        return jsonify({'status': 1, 'msg': '缺少用户ID参数'})
+    
+    # 查询此用户关注的所有人
+    followings = Follow.query.filter_by(follower_id=follower_id).all()
+    
+    # 如果没有关注任何人
+    if not followings:
+        return jsonify({'status': 0, 'followings': []})
+    
+    result = []
+    for follow in followings:
+        # 获取被关注者的信息
+        followee = User.query.get(follow.followee_id)
+        if followee:
+            result.append({
+                'id': followee.id,
+                'username': followee.username,
+                'avatar': followee.avatar,
+                'post_count': Post.query.filter_by(user_id=followee.id).count()
+            })
+    
+    return jsonify({'status': 0, 'followings': result})
+
+# 取消关注
+@user_api.route('/api/unfollow', methods=['POST'])
+def unfollow_user():
+    data = request.get_json()
+    follower_id = data.get('follower_id')
+    followee_id = data.get('followee_id')
+    
+    if not follower_id or not followee_id:
+        return jsonify({'status': 1, 'msg': '缺少参数'})
+    
+    # 查找关注记录
+    follow = Follow.query.filter_by(
+        follower_id=follower_id, 
+        followee_id=followee_id
+    ).first()
+    
+    if not follow:
+        return jsonify({'status': 2, 'msg': '未关注该用户'})
+    
+    # 删除关注记录
+    db.session.delete(follow)
+    db.session.commit()
+    
+    return jsonify({'status': 0, 'msg': '取消关注成功'})
