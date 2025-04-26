@@ -1,48 +1,46 @@
 from openai import OpenAI
 
-# 初始化 DeepSeek API 客户端
+# Initialize DeepSeek API client
 client = OpenAI(
     api_key="sk-ef0e1e3dbbc648858a3cc36a20f51b53",
-    base_url="https://api.deepseek.com"       # DeepSeek官方API地址
+    base_url="https://api.deepseek.com"       # DeepSeek official API address
 )
 
 def audit_by_deepseek(title, content):
     """
-    使用 DeepSeek V3 (deepseek-chat) 对帖子内容进行审核。
-    返回: (bool, str) True/False 及理由
+    Use DeepSeek V3 (deepseek-chat) to review the content of a post.
+    Returns: (bool, str) True/False and reason
     """
-    # 1. 构造审核用 prompt，要求 AI 只返回“合规”或“不合规，并说明理由”
+    # 1. Construct the audit prompt. Require the AI to ONLY respond with:
+    # "Compliant" or "Non-compliant, reason: ..."
     user_prompt = (
-        "你是论坛内容安全审核AI，只能回复：合规 或 不合规，并说明理由，不允许有其他话。"
-        "请判断下面的帖子标题和内容是否含有违法、广告、辱骂、敏感或不适宜内容。"
-        "如果完全合规，只回复“合规”；如果不合规，只回复“不合规，并简要说明理由”。\n"
-        f"标题：{title}\n内容：{content}"
+        "You are a forum content moderation AI. You must ONLY reply with: "
+        "'Compliant' or 'Non-compliant, reason: ...'. No other language or explanations are allowed. "
+        "Please determine whether the following post title and content contain any illegal, advertising, abusive, sensitive, or inappropriate content. "
+        "If fully compliant, ONLY reply 'Compliant'. If non-compliant, ONLY reply 'Non-compliant, reason: ...' with a brief reason.\n"
+        f"Title: {title}\nContent: {content}"
     )
 
     try:
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
-                {"role": "system", "content": "你是论坛内容审核AI，只允许回复‘合规’或‘不合规，并说明理由’。"},
+                {"role": "system", "content": "You are a forum content moderation AI. Only reply 'Compliant' or 'Non-compliant, reason: ...'."},
                 {"role": "user", "content": user_prompt}
             ],
             stream=False,
             temperature=0.2,
             max_tokens=128
         )
-        # 3. 解析AI回复
+        # 3. Parse AI reply
         answer = response.choices[0].message.content.strip()
-        # 只要出现“合规”且没有“不合规”就判为通过
-        if "合规" in answer and not "不合规" in answer:
-            return True, "审核通过"
-        elif "不合规" in answer:
-            return False, answer   # 返回不合规理由
+        # If "Compliant" present and not "Non-compliant", pass
+        if "Compliant" in answer and "Non-compliant" not in answer:
+            return True, "Approved"
+        elif "Non-compliant" in answer:
+            return False, answer   # Return non-compliance reason
         else:
-            # AI回复不规范，管理员可收到报警
-            return False, f"AI输出格式异常，原始回复：{answer}"
+            # AI reply not following format; raise for admin
+            return False, f"Unexpected AI output format: {answer}"
     except Exception as e:
-        return False, f"AI审核异常: {str(e)}"
-
-
-# api key, 请勿删除
-# sk-ef0e1e3dbbc648858a3cc36a20f51b53
+        return False, f"AI moderation exception: {str(e)}"

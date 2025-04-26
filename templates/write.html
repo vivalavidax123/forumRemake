@@ -1,227 +1,205 @@
 <!DOCTYPE html>
-<html lang="zh">
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>发帖 - 简易论坛</title>
-  <!-- EasyMDE Markdown 编辑器 CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
-  <style>
-    body {
-      background: #f7f8fa;
-      min-height: 100vh;
-      margin: 0;
-      font-family: "PingFang SC", "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .navbar {
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-      height: 60px;
-      display: flex;
-      align-items: center;
-      padding: 0 36px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .logo {
-      font-weight: bold;
-      color: #056de8;
-      font-size: 1.6rem;
-      margin-right: 30px;
-      letter-spacing: 2px;
-      cursor: pointer;
-    }
-
-    .blog-write-container {
-      margin-top: 30px;
-      margin-bottom: 30px;
-      background: #fff;
-      padding: 36px 32px 28px 32px;
-      border-radius: 14px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      max-width: 720px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .blog-write-container h2 {
-      text-align: center;
-      margin-bottom: 22px;
-      color: #056de8;
-      font-size: 1.8rem;
-    }
-
-    .blog-write-container input[type="text"] {
-      padding: 12px;
-      margin-bottom: 18px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .EasyMDEContainer {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-
-    .blog-write-container button.submit-btn {
-      background: #056de8 !important;
-      color: #fff !important;
-      border: none !important;
-      border-radius: 5px !important;
-      font-size: 18px !important;
-      padding: 12px 0 !important;
-      width: 100%;
-      margin-top: 10px;
-      cursor: pointer;
-      box-shadow: none !important;
-      transition: background 0.2s;
-    }
-
-    .blog-write-container button.submit-btn:hover {
-      background: #2252c4 !important;
-    }
-
-    .msg {
-      color: #27a744;
-      text-align: center;
-      margin-top: 18px;
-      font-size: 16px;
-    }
-
-    .error-msg {
-      color: #ff4d4f;
-      text-align: center;
-      margin-top: 18px;
-      font-size: 16px;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Create a New Post - Simple Forum</title>
+    <!-- 引入 EasyMDE Markdown 编辑器 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+    <style>
+        body {
+            background: #f7f8fa;
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .navbar {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 36px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .logo {
+            font-weight: bold;
+            color: #056de8;
+            font-size: 1.6rem;
+            margin-right: 30px;
+            letter-spacing: 2px;
+            cursor: pointer;
+        }
+        .blog-write-container {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            background: #fff;
+            padding: 36px 32px 28px 32px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            max-width: 720px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .blog-write-container h2 {
+            text-align: center;
+            margin-bottom: 22px;
+            color: #056de8;
+            font-size: 1.8rem;
+        }
+        .blog-write-container input[type="text"] {
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .EasyMDEContainer {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .blog-write-container button.submit-btn {
+            background: #056de8 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 5px !important;
+            font-size: 18px !important;
+            padding: 12px 0 !important;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+            box-shadow: none !important;
+            transition: background 0.2s;
+        }
+        .blog-write-container button.submit-btn:hover {
+            background: #2252c4 !important;
+        }
+        .msg {
+            color: #27a744;
+            text-align: center;
+            margin-top: 18px;
+            font-size: 16px;
+        }
+        .error-msg {
+            color: #ff4d4f;
+            text-align: center;
+            margin-top: 18px;
+            font-size: 16px;
+            display: none;
+        }
+    </style>
 </head>
-
 <body>
-  <header class="navbar">
-    <div class="logo" id="homeLink">简易论坛</div>
-  </header>
+    <header class="navbar">
+        <div class="logo" id="homeLink">Simple Forum</div>
+    </header>
 
-  <div class="blog-write-container">
-    <h2>发表新帖子</h2>
-    <form id="post-form">
-      <input type="text" name="title" id="post-title" placeholder="请输入标题（5-100字）" required>
-      <!-- Markdown 编辑器 textarea -->
-      <textarea name="content" id="editor" rows="12" placeholder="在这里输入帖子内容..." required></textarea>
-      <button type="submit" class="submit-btn">发布</button>
-      <div id="success-msg" class="msg" style="display:none;">发布成功！</div>
-      <div id="error-msg" class="error-msg">发布失败</div>
-    </form>
-  </div>
+    <div class="blog-write-container">
+        <h2>Create a New Post</h2>
+        <form id="post-form">
+            <input type="text" name="title" id="post-title" placeholder="Enter title (5-100 characters)" required>
+            <!-- Markdown 编辑器 textarea -->
+            <textarea name="content" id="editor" rows="12" placeholder="Write your post content here..." ></textarea>
+            <button type="submit" class="submit-btn">Submit</button>
+            <div id="success-msg" class="msg" style="display:none;">Post submitted successfully!</div>
+            <div id="error-msg" class="error-msg">Post failed.</div>
+        </form>
+    </div>
 
-  <!-- EasyMDE JS -->
-  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-  <script>
-    // 初始化编辑器
-    var easyMDE = new EasyMDE({
-      element: document.getElementById('editor'),
-      spellChecker: false,
-      placeholder: "在这里输入帖子内容...",
-      status: false,
-      autosave: {
-        enabled: true,
-        delay: 1000,
-        uniqueId: "post-editor"
-      },
-      minHeight: "300px"
-    });
-
-    // 返回首页
-    document.getElementById('homeLink').addEventListener('click', function () {
-      window.location.href = '/';
-    });
-
-    // 检查登录状态
-    window.onload = function () {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        alert('请先登录！');
-        window.location.href = '/login';
-      }
-    };
-
-    // 表单提交
-    document.getElementById('post-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const userId = localStorage.getItem('userId');
-      const title = document.getElementById('post-title').value.trim();
-      const content = easyMDE.value().trim();
-
-      // 简单验证
-      if (!title || title.length < 5) {
-        showError('标题不能少于5个字符');
-        return;
-      }
-
-      if (!content || content.length < 10) {
-        showError('内容不能少于10个字符');
-        return;
-      }
-
-      // 提交到后端
-      fetch('/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: parseInt(userId),
-          title: title,
-          content: content
-        })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 0) {
-            // 发帖成功
-            showSuccess();
-            // 2秒后跳转到首页
-            setTimeout(function () {
-              window.location.href = '/';
-            }, 2000);
-          } else {
-            // 发帖失败
-            showError(data.msg || '发布失败');
-          }
-        })
-        .catch(error => {
-          console.error('发帖请求错误:', error);
-          showError('网络错误，请稍后重试');
+    <!-- EasyMDE JS -->
+    <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <script>
+        // 初始化 Markdown 编辑器
+        var easyMDE = new EasyMDE({
+            element: document.getElementById('editor'),
+            spellChecker: false,
+            placeholder: "Write your post content here...",
+            status: false,
+            minHeight: "300px"
         });
-    });
 
-    function showSuccess() {
-      document.getElementById('success-msg').style.display = 'block';
-      document.getElementById('error-msg').style.display = 'none';
-    }
+        // 返回首页
+        document.getElementById('homeLink').addEventListener('click', function () {
+            window.location.href = '/';
+        });
 
-    function showError(message) {
-      const errorMsg = document.getElementById('error-msg');
-      errorMsg.innerText = message;
-      errorMsg.style.display = 'block';
-      document.getElementById('success-msg').style.display = 'none';
-    }
-  </script>
+        // 检查登录状态（假设你把 userId 存在 localStorage 里）
+        window.onload = function () {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                alert('Please log in first!');
+                window.location.href = '/login';
+            }
+        };
+
+        // 表单提交
+        document.getElementById('post-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const userId = localStorage.getItem('userId');
+            const title = document.getElementById('post-title').value.trim();
+            const content = easyMDE.value().trim();
+
+            // 简单验证
+            if (!title || title.length < 5) {
+                showError('The title must be at least 5 characters.');
+                return;
+            }
+            if (!content || content.length < 10) {
+                showError('The content must be at least 10 characters.');
+                return;
+            }
+
+            // 提交到后端
+            fetch('/api/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: parseInt(userId),
+                    title: title,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 0) {
+                    showSuccess();
+                    setTimeout(function () {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    showError(data.msg || 'Failed to submit post.');
+                }
+            })
+            .catch(error => {
+                console.error('Post request error:', error);
+                showError('Network error, please try again later.');
+            });
+        });
+
+        function showSuccess() {
+            document.getElementById('success-msg').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('error-msg');
+            errorMsg.innerText = message;
+            errorMsg.style.display = 'block';
+            document.getElementById('success-msg').style.display = 'none';
+        }
+    </script>
 </body>
-
 </html>

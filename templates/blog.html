@@ -136,6 +136,25 @@
         .new-comment {
             animation: fadeIn 0.5s ease-out;
         }
+
+        /* 新增：删除按钮样式 */
+        .delete-btn {
+            display: inline-flex;
+            align-items: center;
+            background: #ffecec;
+            color: #ff4d4f;
+            border: 1px solid #ffd6d6;
+            border-radius: 20px;
+            padding: 8px 20px;
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #ffd6d6;
+        }
     </style>
 </head>
 
@@ -164,6 +183,8 @@
                     👍 <span id="likeCount">0</span>
                 </button>
                 <a href="/" class="back-btn">← 返回首页</a>
+                <!-- 新增：删除按钮，默认隐藏 -->
+                <button class="delete-btn" id="deleteBtn" style="display: none;">删除帖子</button>
             </div>
 
             <div class="comment-section">
@@ -196,6 +217,7 @@
         const postId = "{{ post_id }}";
         let currentUserId = null;
         let currentUsername = null;
+        let postAuthorId = null; // 新增：帖子作者ID
         
         // 页面加载完成后获取帖子详情
         window.onload = function() {
@@ -253,14 +275,41 @@
                     alert('请先登录再点赞！');
                     return;
                 }
+                
+                // 检查按钮是否已经标记为点赞状态
+                if (this.getAttribute('data-liked') === 'true') {
+                    alert('您已经点赞过这篇帖子');
+                    return;
+                }
 
                 fetch(`/api/posts/${postId}/like`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId
+                    })
                 })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 0) {
+                            // 点赞成功
                             document.getElementById('likeCount').innerText = data.like_count;
+                            
+                            // 改变按钮样式
+                            const likeBtn = document.getElementById('likeBtn');
+                            likeBtn.style.background = '#e0e9ff';
+                            likeBtn.style.color = '#003eb3';
+                            likeBtn.setAttribute('data-liked', 'true');
+                        } else if (data.status === 3) {
+                            // 已点赞
+                            alert(data.msg);
+                            
+                            // 设置点赞状态
+                            this.setAttribute('data-liked', 'true');
+                            this.style.background = '#e0e9ff';
+                            this.style.color = '#003eb3';
                         } else {
                             alert('点赞失败: ' + (data.msg || '未知错误'));
                         }
@@ -270,9 +319,36 @@
                     });
             });
 
+            // 新增：删除帖子功能
+            document.getElementById('deleteBtn').addEventListener('click', function() {
+                if (confirm('确定要删除这篇帖子吗？此操作不可恢复！')) {
+                    deletePost();
+                }
+            });
+
             // 提交评论
             document.getElementById('submitComment').addEventListener('click', submitComment);
         };
+
+        // 检查帖子点赞状态
+        function checkPostLikeStatus() {
+            if (currentUserId) {
+                fetch(`/api/posts/${postId}/like/check?user_id=${currentUserId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 0 && data.has_liked) {
+                            // 已点赞，改变按钮样式
+                            const likeBtn = document.getElementById('likeBtn');
+                            likeBtn.style.background = '#e0e9ff';
+                            likeBtn.style.color = '#003eb3';
+                            likeBtn.setAttribute('data-liked', 'true');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取点赞状态错误:', error);
+                    });
+            }
+        }
 
         // 加载帖子详情
         function loadPostDetail() {
@@ -281,6 +357,7 @@
                 .then(data => {
                     if (data.status === 0) {
                         const post = data.post;
+                        postAuthorId = post.user_id; // 保存帖子作者ID
 
                         // 设置标题和内容
                         document.getElementById('post-title').innerText = post.title;
@@ -310,6 +387,14 @@
 
                         // 设置页面标题
                         document.title = `${post.title} - 简易论坛`;
+                        
+                        // 新增：检查当前用户是否是帖子作者，决定是否显示删除按钮
+                        if (currentUserId && currentUserId == post.user_id) {
+                            document.getElementById('deleteBtn').style.display = 'inline-flex';
+                        }
+                        
+                        // 检查点赞状态
+                        setTimeout(checkPostLikeStatus, 500);
                     } else {
                         alert('加载帖子失败: ' + (data.msg || '未知错误'));
                         window.location.href = '/';
@@ -319,6 +404,110 @@
                     console.error('加载帖子详情错误:', error);
                     document.getElementById('post-content').innerText = '加载失败，请刷新页面重试';
                 });
+        }
+
+        // 新增：删除帖子函数
+        function deletePost() {
+            if (!currentUserId) {
+                alert('请先登录！');
+                return;
+            }
+
+            fetch(`/api/posts/${postId}?user_id=${currentUserId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 0) {
+                    alert('帖子删除成功！');
+                    window.location.href = '/'; // 删除成功后跳转到首页
+                } else {
+                    alert('删除失败: ' + (data.msg || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('删除帖子请求错误:', error);
+                alert('网络错误，请稍后重试');
+            });
+        }
+
+        // 为评论添加点赞事件
+        function addLikeEventToComment(commentElement, commentId) {
+            const likeSpan = commentElement.querySelector('.comment-meta span:last-child');
+            if (likeSpan) {
+                // 设置评论ID属性
+                likeSpan.setAttribute('data-comment-id', commentId);
+                
+                // 检查当前用户是否已点赞此评论
+                if (currentUserId) {
+                    fetch(`/api/comments/${commentId}/like/check?user_id=${currentUserId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 0 && data.has_liked) {
+                                // 已点赞，改变样式
+                                likeSpan.style.color = '#056de8';
+                                likeSpan.style.fontWeight = 'bold';
+                                likeSpan.setAttribute('data-liked', 'true');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('获取评论点赞状态错误:', error);
+                        });
+                }
+                
+                // 移除旧的事件监听器(防止重复绑定)
+                const newLikeSpan = likeSpan.cloneNode(true);
+                likeSpan.parentNode.replaceChild(newLikeSpan, likeSpan);
+                
+                // 添加新的点击事件
+                newLikeSpan.addEventListener('click', function() {
+                    if (!currentUserId) {
+                        alert('请先登录再点赞！');
+                        return;
+                    }
+                    
+                    // 如果已点赞，提示用户
+                    if (this.getAttribute('data-liked') === 'true') {
+                        alert('您已经点赞过这条评论');
+                        return;
+                    }
+                    
+                    fetch(`/api/comments/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_id: currentUserId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 0) {
+                            // 点赞成功
+                            this.innerHTML = `👍 ${data.like_count}`;
+                            
+                            // 修改样式
+                            this.style.color = '#056de8';
+                            this.style.fontWeight = 'bold';
+                            this.setAttribute('data-liked', 'true');
+                        } else if (data.status === 3) {
+                            // 已点赞过
+                            alert(data.msg);
+                            
+                            // 修改样式
+                            this.style.color = '#056de8';
+                            this.style.fontWeight = 'bold';
+                            this.setAttribute('data-liked', 'true');
+                        } else {
+                            alert('点赞失败: ' + (data.msg || '未知错误'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('评论点赞错误:', error);
+                    });
+                });
+            }
         }
 
         // 加载评论列表
@@ -364,7 +553,7 @@
                             return dateB - dateA; // 倒序排列
                         });
 
-                        // 添加每条评论 - 直接添加DOM，不使用Promise.all
+                        // 添加每条评论
                         comments.forEach(comment => {
                             try {
                                 const date = new Date(comment.create_time || new Date());
@@ -388,28 +577,7 @@
                                 commentListDiv.appendChild(commentDiv);
                                 
                                 // 添加点赞事件
-                                const likeSpan = commentDiv.querySelector('.comment-meta span:last-child');
-                                if (likeSpan) {
-                                    likeSpan.addEventListener('click', function() {
-                                        if (!currentUserId) {
-                                            alert('请先登录再点赞！');
-                                            return;
-                                        }
-                                        
-                                        fetch(`/api/comments/${comment.id}/like`, {
-                                            method: 'POST'
-                                        })
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.status === 0) {
-                                                likeSpan.innerHTML = `👍 ${data.like_count}`;
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('点赞失败:', error);
-                                        });
-                                    });
-                                }
+                                addLikeEventToComment(commentDiv, comment.id);
                                 
                                 // 异步获取用户名 - 不会影响主流程
                                 if (comment.user_id.toString() === currentUserId) {
@@ -459,63 +627,6 @@
                         commentListDiv.appendChild(errorDiv);
                     }
                 });
-        }
-        
-        // 为评论添加点赞事件
-        function addLikeEventToComment(commentElement, commentId) {
-            const likeSpan = commentElement.querySelector('.comment-meta span:last-child');
-            if (likeSpan) {
-                likeSpan.addEventListener('click', function() {
-                    if (!currentUserId) {
-                        alert('请先登录再点赞！');
-                        return;
-                    }
-                    
-                    fetch(`/api/comments/${commentId}/like`, {
-                        method: 'POST'
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 0) {
-                                // 更新点赞数
-                                likeSpan.innerHTML = `👍 ${data.like_count}`;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('评论点赞错误:', error);
-                        });
-                });
-            }
-        }
-
-        // 添加评论点赞事件
-        function addCommentLikeEvents() {
-            document.querySelectorAll('.comment-item').forEach(item => {
-                const likeSpan = item.querySelector('.comment-meta span:last-child');
-                likeSpan.style.cursor = 'pointer';
-                
-                likeSpan.addEventListener('click', function() {
-                    if (!currentUserId) {
-                        alert('请先登录再点赞！');
-                        return;
-                    }
-                    
-                    const commentId = item.dataset.id;
-                    fetch(`/api/comments/${commentId}/like`, {
-                        method: 'POST'
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 0) {
-                                // 更新点赞数
-                                likeSpan.innerHTML = `👍 ${data.like_count}`;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('评论点赞错误:', error);
-                        });
-                });
-            });
         }
 
         // 提交评论
@@ -655,29 +766,7 @@
                 }
                 
                 // 为点赞按钮添加事件
-                const likeSpan = commentDiv.querySelector('.comment-meta span:last-child');
-                if (likeSpan) {
-                    likeSpan.addEventListener('click', function() {
-                        if (!currentUserId) {
-                            alert('请先登录再点赞！');
-                            return;
-                        }
-                        
-                        fetch(`/api/comments/${comment.id}/like`, {
-                            method: 'POST'
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 0) {
-                                // 更新点赞数
-                                likeSpan.innerHTML = `👍 ${data.like_count}`;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('评论点赞错误:', error);
-                        });
-                    });
-                }
+                addLikeEventToComment(commentDiv, comment.id);
                 
                 // 如果是新评论，滚动到评论位置
                 if (isNew) {

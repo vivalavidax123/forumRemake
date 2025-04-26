@@ -4,7 +4,7 @@ from database import db, User
 user_api = Blueprint('user_api', __name__)
 
 
-# 注册 (username)
+# Register
 @user_api.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -13,22 +13,22 @@ def register():
     avatar = data.get('avatar', '')
 
     password = data.get('password')
-    password_hash = password  # 加密，但是没加
+    password_hash = password  # TODO: Add hashing!
 
     if not password or len(password) < 6:
-        return jsonify({'status': 3, 'msg': '密码必须至少六位'})
+        return jsonify({'status': 3, 'msg': 'Password must be at least 6 characters long.'})
     if not username:
-        return jsonify({'status': 1, 'msg': '用户名不能为空'})
+        return jsonify({'status': 1, 'msg': 'Username cannot be empty.'})
     if User.query.filter_by(username=username).first():
-        return jsonify({'status': 2, 'msg': '用户名已存在'})
+        return jsonify({'status': 2, 'msg': 'Username already exists.'})
 
 
     user = User(username=username, password_hash=password_hash, email=email, avatar=avatar)
     db.session.add(user)
     db.session.commit()
-    return jsonify({'status': 0, 'msg': '注册成功', 'user_id': user.id})
+    return jsonify({'status': 0, 'msg': 'register complete', 'user_id': user.id})
 
-# 登录 (username)
+# login
 @user_api.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -38,19 +38,19 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     if not user:
-        return jsonify({'status': 1, 'msg': '用户不存在'})
+        return jsonify({'status': 1, 'msg': 'User does not exist.'})
     if not password or user.password_hash != password_hash:
-        return jsonify({'status': 2, 'msg': '密码错误'})
+        return jsonify({'status': 2, 'msg': 'Incorrect password.'})
     return jsonify({
         'status': 0,
-        'msg': '登录成功',
+        'msg': 'Login successful.',
         'user_id': user.id,
         'username': user.username,
         'avatar': user.avatar or ""
     })
 
 
-# 查看所有user（测试）
+# get all user
 @user_api.route('/api/users', methods=['GET'])
 def get_all_users():
     users = User.query.all()
@@ -66,7 +66,7 @@ def get_all_users():
         })
     return jsonify({'status': 0, 'users': result})
 
-
+# get user
 @user_api.route('/api/user', methods=['GET'])
 def get_user():
     user_id = request.args.get('user_id')
@@ -92,58 +92,59 @@ def get_user():
     return jsonify({'status': 0, 'user': result})
 
 
+
+# update user
 @user_api.route('/api/user/update', methods=['POST'])
 def update_user():
     data = request.get_json()
     user_id = data.get('user_id')
     if not user_id:
-        return jsonify({'status': 1, 'msg': '缺少用户ID'})
+        return jsonify({'status': 1, 'msg': 'Missing user ID.'})
 
     user = User.query.filter_by(id=user_id).first()
     if not user:
-        return jsonify({'status': 2, 'msg': '用户不存在'})
+        return jsonify({'status': 2, 'msg': 'User does not exist.'})
 
-    # 可选：修改的字段
     username = data.get('username')
     email = data.get('email')
     avatar = data.get('avatar')
     password = data.get('password')
 
-    # 根据前端传递的字段动态修改
-    if username:
-        # 检查用户名是否被占用
-        if User.query.filter_by(username=username).first() and user.username != username:
-            return jsonify({'status': 3, 'msg': '用户名已存在'})
+    if username and username != user.username:
+        # 只在用户真的打算修改用户名时才查重
+        if User.query.filter_by(username=username).first():
+            return jsonify({'status': 3, 'msg': 'Username already exists.'})
         user.username = username
+
     if email:
         user.email = email
     if avatar:
         user.avatar = avatar
     if password:
         if len(password) < 6:
-            return jsonify({'status': 4, 'msg': '密码必须至少六位'})
+            return jsonify({'status': 4, 'msg': 'Password must be at least 6 characters long.'})
         password_hash = password
         user.password_hash = password_hash
 
     db.session.commit()
-    return jsonify({'status': 0, 'msg': '用户信息修改成功'})
+    return jsonify({'status': 0, 'msg': 'User information updated successfully.'})
 
-# 返回当前用户信息
+# Return current user information
 @user_api.route('/api/profile', methods=['GET'])
 def get_profile():
     user_id = request.args.get('user_id')
     if not user_id:
-        return jsonify({'status': 1, 'msg': '缺少用户ID'})
+        return jsonify({'status': 1, 'msg': 'Missing user ID.'})
     user = User.query.filter_by(id=user_id).first()
     if not user:
-        return jsonify({'status': 2, 'msg': '用户不存在'})
+        return jsonify({'status': 2, 'msg': 'User does not exist.'})
     result = {
         'id': user.id,
         'username': user.username,
         'avatar': user.avatar or "",
         'email': user.email,
         'post_count': user.post_count,
-        # 你可以自己加 follow_count
+        # You can add follow_count as needed
         'follow_count': getattr(user, 'follow_count', 0)
     }
-    return jsonify({'status': 0, 'user': result})
+    return jsonify({'status': 0, 'msg': 'User profile retrieved successfully.', 'data': result})
