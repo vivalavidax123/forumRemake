@@ -241,3 +241,34 @@ def unfollow_user():
     db.session.commit()
     
     return jsonify({'status': 0, 'msg': '取消关注成功'})
+
+
+
+# 获取关注者（Followings）的所有帖子，按时间倒序排序
+@user_api.route('/api/following/posts', methods=['GET'])
+def get_following_posts():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({'status': 1, 'msg': 'Missing user ID.'})
+
+    # 获取当前用户关注的所有用户ID
+    followings = Follow.query.filter_by(follower_id=user_id).all()
+    followee_ids = [f.followee_id for f in followings]
+    if not followee_ids:
+        return jsonify({'status': 0, 'posts': []})
+
+    # 查询这些用户的所有帖子，按时间倒序
+    posts = Post.query.filter(Post.user_id.in_(followee_ids)).order_by(Post.create_time.desc()).all()
+    result = []
+    for p in posts:
+        result.append({
+            'id': p.id,
+            'title': p.title,
+            'content': p.content,
+            'user_id': p.user_id,
+            'create_time': p.create_time.isoformat() if p.create_time else None,
+            'like_count': p.like_count,
+            'comment_count': p.comment_count
+        })
+
+    return jsonify({'status': 0, 'posts': result})
