@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>关注列表 - Easy Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <style>
+        .following-container {
+            margin-top: 20px;
+        }
+        
+        .user-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 20px;
+            object-fit: cover;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #056de8;
+            margin-bottom: 5px;
+        }
+        
+        .user-stats {
+            display: flex;
+            color: #666;
+            font-size: 14px;
+            gap: 15px;
+        }
+        
+        .unfollow-btn {
+            background: #f0f4ff;
+            color: #056de8;
+            border: 1px solid #e0e9ff;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .unfollow-btn:hover {
+            background: #e0e9ff;
+        }
+        
+        .no-following {
+            text-align: center;
+            padding: 40px 0;
+            color: #999;
+            font-size: 16px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="navbar">
+        <!-- 上层 -->
+        <div class="header-top">
+            <div class="logo">Easy Blog</div>
+            <input class="search" type="text" id="searchInput" placeholder="Search">
+            <div class="user" id="userArea">
+                <!-- 用户区域由JS动态填充 -->
+            </div>
+        </div>
+        <!-- 下层 -->
+        <div class="header-bottom">
+            <a href="/">Home</a>
+            <a href="/hot">Hot</a>
+            <a href="/follow">Following</a>
+        </div>
+    </header>
+
+    <div class="main-grid">
+        <main class="center">
+            <h2 style="margin-bottom: 20px; color: #056de8;">Following</h2>
+            <div class="following-container" id="followingList">
+                <div class="loading">Loading</div>
+            </div>
+        </main>
+
+        <aside class="right">
+            <div class="user-profile" id="userProfile">
+                <img src="/static/avatar.png" alt="用户头像" class="avatar" id="avatar">
+                <div class="user-info">
+                    <div class="username" id="username">未登录</div>
+                    <div class="stats">
+                        <span>Blog <b id="postCount">0</b></span>
+                        <span>Following <b id="followCount">0</b></span>
+                    </div>
+                </div>
+                <!-- 隐藏的文件上传input -->
+                <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                <!-- 更改头像按钮 -->
+                <button class="write-btn" id="changeAvatarBtn">更改头像</button>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="footer">
+        &copy; Hackathon 2025 Easy Blog
+    </footer>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script>
+        // 获取关注列表
+        function loadFollowingList() {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                document.getElementById('followingList').innerHTML = `
+                    <div class="no-following">
+                        <p>请先登录查看关注列表</p>
+                        <button onclick="window.location.href='/login'" style="margin-top: 10px; padding: 10px 20px; background: #056de8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            去登录
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            fetch(`/api/following?user_id=${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const followingListDiv = document.getElementById('followingList');
+                    if (data.status === 0) {
+                        const followings = data.followings || [];
+                        
+                        if (followings.length === 0) {
+                            followingListDiv.innerHTML = `
+                                <div class="no-following">
+                                    <p>您还没有关注任何人</p>
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        followingListDiv.innerHTML = '';
+                        followings.forEach(user => {
+                            const userCard = document.createElement('div');
+                            userCard.className = 'user-card';
+                            userCard.innerHTML = `
+                                <img src="${user.avatar || '/static/avatar.png'}" alt="${user.username}" class="user-avatar">
+                                <div class="user-info">
+                                    <div class="user-name">${user.username}</div>
+                                    <div class="user-stats">
+                                        <span>博客: ${user.post_count || 0}</span>
+                                    </div>
+                                </div>
+                                <button class="unfollow-btn" data-user-id="${user.id}">取消关注</button>
+                            `;
+                            followingListDiv.appendChild(userCard);
+                            
+                            // 添加用户卡片点击事件 - 点击头像或用户名跳转到用户页面
+                            const userAvatar = userCard.querySelector('.user-avatar');
+                            const userName = userCard.querySelector('.user-name');
+                            
+                            function goToUserPage() {
+                                // 假设有用户页面路由
+                                window.location.href = `/user/${user.id}`;
+                            }
+                            
+                            userAvatar.addEventListener('click', goToUserPage);
+                            userName.addEventListener('click', goToUserPage);
+                            
+                            // 添加取消关注事件
+                            const unfollowBtn = userCard.querySelector('.unfollow-btn');
+                            unfollowBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                const followeeId = this.getAttribute('data-user-id');
+                                unfollowUser(userId, followeeId, userCard);
+                            });
+                        });
+                    } else {
+                        followingListDiv.innerHTML = `
+                            <div class="no-following">
+                                <p>加载关注列表失败: ${data.msg || '未知错误'}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载关注列表错误:', error);
+                    document.getElementById('followingList').innerHTML = `
+                        <div class="no-following">
+                            <p>网络错误，请稍后重试</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // 取消关注用户
+        function unfollowUser(followerId, followeeId, userCard) {
+            if (!confirm('确定要取消关注此用户吗？')) {
+                return;
+            }
+            
+            fetch('/api/unfollow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    follower_id: parseInt(followerId),
+                    followee_id: parseInt(followeeId)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 0) {
+                    // 成功取消关注，从DOM中移除用户卡片
+                    userCard.style.transition = 'all 0.3s';
+                    userCard.style.opacity = '0';
+                    userCard.style.transform = 'translateX(30px)';
+                    
+                    setTimeout(() => {
+                        userCard.remove();
+                        
+                        // 如果没有关注的人了，显示提示
+                        const followingListDiv = document.getElementById('followingList');
+                        if (followingListDiv.children.length === 0) {
+                            followingListDiv.innerHTML = `
+                                <div class="no-following">
+                                    <p>您还没有关注任何人</p>
+                                    <button onclick="window.location.href='/'" style="margin-top: 10px; padding: 10px 20px; background: #056de8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                        浏览用户
+                                    </button>
+                                </div>
+                            `;
+                        }
+                        
+                        // 更新关注计数
+                        const followCountElement = document.getElementById('followCount');
+                        if (followCountElement) {
+                            const currentCount = parseInt(followCountElement.textContent);
+                            if (!isNaN(currentCount) && currentCount > 0) {
+                                followCountElement.textContent = currentCount - 1;
+                            }
+                        }
+                    }, 300);
+                } else {
+                    alert('取消关注失败: ' + (data.msg || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('取消关注请求错误:', error);
+                alert('网络错误，请稍后重试');
+            });
+        }
+
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 使用main.js中的函数更新顶部用户区域和右侧个人资料
+            if (typeof updateUserArea === 'function') {
+                updateUserArea();
+            }
+            
+            if (typeof loadUserProfile === 'function') {
+                loadUserProfile();
+            }
+            
+            // 加载关注列表
+            loadFollowingList();
+        });
+    </script>
+</body>
+
+</html>

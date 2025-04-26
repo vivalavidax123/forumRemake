@@ -32,6 +32,10 @@ def write():
 def blog(post_id):
     return render_template('blog.html', post_id=post_id)
 
+@app.route('/follow')
+def follow():
+    return render_template('following.html')
+
 # Function to open browser only once
 def open_browser():
     # Only open the browser in the main process, not in the reloader
