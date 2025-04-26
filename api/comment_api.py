@@ -95,11 +95,11 @@ def like_comment(comment_id):
     user_id = data.get('user_id')
     
     if not user_id:
-        return jsonify({'status': 2, 'msg': '请先登录再点赞'})
+        return jsonify({'status': 2, 'msg': 'Please log in first'})
     
     comment = Comment.query.get(comment_id)
     if not comment:
-        return jsonify({'status': 1, 'msg': '评论不存在'})
+        return jsonify({'status': 1, 'msg': 'Comment not found'})
     
     # 检查用户是否已经点赞过这条评论
     existing_like = CommentLike.query.filter_by(
@@ -111,7 +111,7 @@ def like_comment(comment_id):
         # 用户已经点赞过，返回提示
         return jsonify({
             'status': 3, 
-            'msg': '您已经点赞过这条评论', 
+            'msg': 'Already liked', 
             'like_count': comment.like_count,
             'has_liked': True
         })
@@ -126,7 +126,7 @@ def like_comment(comment_id):
     
     return jsonify({
         'status': 0, 
-        'msg': '点赞成功', 
+        'msg': 'Like successful', 
         'like_count': comment.like_count,
         'has_liked': True
     })
@@ -136,7 +136,7 @@ def like_comment(comment_id):
 def check_comment_like(comment_id):
     user_id = request.args.get('user_id')
     if not user_id:
-        return jsonify({'status': 1, 'msg': '请先登录', 'has_liked': False})
+        return jsonify({'status': 1, 'msg': 'Please login first', 'has_liked': False})
     
     # 查询点赞记录
     like = CommentLike.query.filter_by(user_id=user_id, comment_id=comment_id).first()
