@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from database import db, User, Follow
+from database import db, User, Follow, Post
 import os
 import uuid
 
@@ -146,7 +146,7 @@ def get_profile():
         'username': user.username,
         'avatar': user.avatar or "",
         'email': user.email,
-        'post_count': user.post_count,
+        'post_count': Post.query.filter_by(user_id=user.id).count(),
         # You can add follow_count as needed
         'follow_count': getattr(user, 'follow_count', 0)
     }
